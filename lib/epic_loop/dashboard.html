@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>epic_loop</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --raised: #ffffff; --sunken: #f1f0ec;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781; --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,.10);
+  --blue: #2a78d6; --violet: #4a3aa7; --good: #0ca30c; --good-text: #006300; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --screen-bg: #1a1a19; --screen-ink: #e8e7e1;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --raised: #222220; --sunken: #141413;
+    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781; --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10);
+    --blue: #3987e5; --violet: #9085e9; --good-text: #0ca30c; --screen-bg: #0d0d0d;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --raised: #222220; --sunken: #141413;
+  --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781; --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10);
+  --blue: #3987e5; --violet: #9085e9; --good-text: #0ca30c; --screen-bg: #0d0d0d;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--ink); font: 14px/1.45 var(--sans); -webkit-font-smoothing: antialiased; }
+a { color: var(--blue); }
+code, .mono { font-family: var(--mono); font-size: 12.5px; }
+.muted { color: var(--muted); }
+.ink2 { color: var(--ink-2); }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1440px; margin: 0 auto; padding: 0 16px 48px; }
+
+/* top bar */
+header.top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--page) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+header.top .wrap { display: flex; align-items: center; gap: 12px; padding-top: 10px; padding-bottom: 10px; min-height: 52px; }
+.brand { font-family: var(--mono); font-weight: 600; font-size: 13px; color: var(--ink-2); white-space: nowrap; text-decoration: none; }
+.brand:hover { color: var(--ink); }
+.crumb { font-size: 13px; color: var(--ink-2); text-decoration: none; white-space: nowrap; padding: 2px 8px; border: 1px solid var(--border); border-radius: 6px; }
+.crumb:hover { color: var(--ink); background: var(--sunken); }
+.crumb::before { content: "← "; }
+table.epics td { vertical-align: middle; }
+table.epics .segments { width: 160px; height: 8px; }
+.epic-name { font-weight: 600; color: var(--ink); text-decoration: none; }
+.epic-name:hover { text-decoration: underline; }
+.epic-title { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.epic-title .mono { font-weight: 400; color: var(--muted); margin-left: 6px; }
+nav.sections { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+nav.sections a { color: var(--ink-2); text-decoration: none; font-size: 13px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
+nav.sections a:hover { background: var(--sunken); color: var(--ink); }
+nav.sections a .count { color: var(--muted); margin-left: 3px; }
+nav.sections a.alert .count { color: var(--ink); font-weight: 600; }
+
+/* badges: the icon carries the tone, the label stays in ink */
+.badge { --tone: var(--muted); display: inline-flex; align-items: center; gap: 5px; padding: 0 8px 0 6px; border-radius: 999px; font-size: 12px; line-height: 20px; white-space: nowrap; color: var(--ink); background: color-mix(in srgb, var(--tone) 13%, var(--surface)); border: 1px solid color-mix(in srgb, var(--tone) 38%, transparent); }
+.badge i { font-style: normal; font-weight: 700; color: var(--tone); width: 1em; text-align: center; }
+.t-good { --tone: var(--good); } .t-blue { --tone: var(--blue); } .t-violet { --tone: var(--violet); }
+.t-warning { --tone: var(--warning); } .t-serious { --tone: var(--serious); } .t-critical { --tone: var(--critical); }
+.t-ink { --tone: var(--ink-2); } .t-muted { --tone: var(--muted); }
+.t-warning i { color: color-mix(in srgb, var(--warning) 70%, var(--ink)); }
+.pulse i { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .pulse i { animation: none; } }
+
+/* sections */
+section { margin-top: 20px; scroll-margin-top: 64px; }
+section > h2 { display: flex; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+section > h2 .count { color: var(--muted); font-weight: 400; }
+section > h2 .aside { margin-left: auto; font-weight: 400; font-size: 12.5px; color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card + .card { margin-top: 8px; }
+.empty { color: var(--muted); padding: 6px 0; }
+.banner { margin-top: 14px; padding: 10px 14px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--critical) 45%, transparent); background: color-mix(in srgb, var(--critical) 9%, var(--surface)); }
+.banner.info { border-color: var(--border); background: var(--surface); }
+
+.segments { display: flex; gap: 2px; height: 10px; border-radius: 4px; overflow: hidden; background: var(--sunken); }
+.segments span { display: block; height: 100%; background: var(--tone); min-width: 3px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-size: 12.5px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend b { width: 9px; height: 9px; border-radius: 2px; background: var(--tone); display: inline-block; }
+
+/* needs you */
+.need { border-left: 4px solid var(--warning); }
+.need.t-serious { border-left-color: var(--serious); }
+.need.t-good { border-left-color: var(--good); }
+.need-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.need-head strong { font-size: 14.5px; }
+.question { font-size: 16px; font-weight: 600; margin: 8px 0 4px; }
+.options { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+.options span { padding: 2px 10px; border-radius: 6px; background: var(--sunken); border: 1px solid var(--border); font-size: 13px; }
+pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; }
+.prose { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+.cmd { display: flex; align-items: stretch; gap: 0; margin-top: 10px; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; background: var(--sunken); }
+.cmd code { flex: 1; min-width: 0; padding: 7px 10px; overflow-x: auto; white-space: nowrap; }
+.cmd button { border: 0; border-left: 1px solid var(--border); background: var(--raised); color: var(--ink); font: 12.5px var(--sans); padding: 0 12px; cursor: pointer; }
+.cmd button:hover { background: var(--grid); }
+
+/* lanes */
+.lane { display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr 1.25fr; gap: 14px; }
+.lane > div { min-width: 0; }
+.lane h4 { margin: 0 0 4px; font-size: 11.5px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.line { margin-top: 3px; font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; }
+.line.first { margin-top: 0; color: var(--ink); }
+.none { color: var(--muted); font-size: 13px; }
+/* A ticket id never breaks: the table grows to fit, and scrolls inside its card when the window is narrower. */
+table.lanes { min-width: 1280px; }
+table.lanes td { padding: 10px 8px; }
+table.lanes td.tcell { min-width: 250px; }
+table.lanes td.tcell .ticket-link { white-space: nowrap; }
+table.lanes td.deps { max-width: none; }
+table.lanes td.now { min-width: 230px; }
+table.lanes tr.has-issues td { border-bottom: 0; }
+table.lanes tr.issues-row td { padding-top: 0; }
+table.lanes tr.issues-row .issues { border-top: 0; padding-top: 0; }
+
+.ticket-link { cursor: pointer; font-weight: 600; color: var(--ink); text-decoration: none; }
+.ticket-link:hover { text-decoration: underline; }
+.issues { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 3px; padding-top: 8px; border-top: 1px solid var(--grid); font-size: 13px; }
+.issues div::before { content: "! "; font-weight: 700; color: var(--serious); }
+.meter-row { display: grid; grid-template-columns: 52px 1fr auto; gap: 8px; align-items: center; font-size: 12.5px; color: var(--ink-2); margin-top: 4px; }
+.meter { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--blue) 18%, var(--surface)); overflow: hidden; }
+.meter b { display: block; height: 100%; width: 0; background: var(--blue); border-radius: 3px; }
+.meter.warn { background: color-mix(in srgb, var(--warning) 22%, var(--surface)); } .meter.warn b { background: var(--warning); }
+.meter.over { background: color-mix(in srgb, var(--critical) 18%, var(--surface)); } .meter.over b { background: var(--critical); }
+.cmdline { margin-top: 4px; padding: 5px 8px; border-radius: 6px; background: var(--sunken); font-size: 12.5px; }
+.cmdline .what { color: var(--ink); }
+.long { color: var(--ink); font-weight: 600; }
+
+/* tickets */
+.graph { overflow-x: auto; padding-bottom: 4px; }
+.graph svg { display: block; }
+.graph .node { cursor: pointer; }
+.graph .node rect.box { fill: var(--raised); stroke: var(--border); }
+.graph .node:hover rect.box { stroke: var(--ink-2); }
+.graph .node rect.side { fill: var(--tone); }
+.graph .node text { fill: var(--ink); font: 12.5px var(--sans); }
+.graph .node text.id { font: 600 12px var(--mono); }
+.graph .node text.icon { fill: var(--tone); font-weight: 700; }
+.graph path.edge { fill: none; stroke: var(--axis); stroke-width: 1.5; }
+.graph path.edge.open { stroke: var(--ink-2); stroke-dasharray: 4 3; }
+.graph path.edge.head { stroke-dasharray: none; }
+.graph.focus .link { opacity: .25; }
+.graph.focus .link.hl { opacity: 1; }
+.graph.focus .link.hl path.edge { stroke: var(--blue); stroke-width: 2; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { font-weight: 500; color: var(--muted); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+tr.click { cursor: pointer; }
+tr.click:hover td { background: var(--sunken); }
+td.deps { min-width: 120px; max-width: 300px; }
+.chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip { font-family: var(--mono); font-size: 11.5px; padding: 0 6px; border-radius: 4px; background: var(--sunken); border: 1px solid var(--border); white-space: nowrap; }
+.chip.open { border-color: var(--ink-2); }
+.chip.done { color: var(--muted); }
+.chip.done::before { content: "✓ "; color: var(--good-text); }
+
+/* processes */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tree { font-family: var(--mono); font-size: 12.5px; }
+.tree .row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 12px; padding: 3px 0; border-bottom: 1px solid var(--grid); align-items: baseline; }
+.tree .row:last-child { border-bottom: 0; }
+.tree .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tree .guide { color: var(--axis); }
+.tree .cur { grid-column: 1 / -1; color: var(--muted); padding-left: 2ch; font-size: 11.5px; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 13px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+
+/* attention and log */
+.entry + .entry { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--grid); }
+.entry-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.logbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.logbar input, .logbar select { font: 13px var(--sans); color: var(--ink); background: var(--raised); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; }
+.logbar input[type="search"] { flex: 1; min-width: 180px; }
+.logbar label { font-size: 13px; color: var(--ink-2); display: inline-flex; gap: 5px; align-items: center; }
+.log { max-height: 176px; overflow: auto; background: var(--sunken); border-radius: 8px; padding: 8px 10px; }
+.log.tall { max-height: 70vh; }
+button.toggle { border: 1px solid var(--border); background: var(--raised); color: var(--ink); border-radius: 6px; padding: 4px 10px; cursor: pointer; font: 13px var(--sans); }
+button.toggle:hover { background: var(--sunken); }
+.counter { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+details.history > summary { list-style: none; cursor: pointer; }
+details.history > summary::-webkit-details-marker { display: none; }
+details.history > summary h2 { display: flex; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+details.history > summary h2::before { content: "▸"; color: var(--muted); }
+details.history[open] > summary h2::before { content: "▾"; }
+details.history > summary h2 .count { color: var(--muted); font-weight: 400; }
+details.history > summary h2 .aside { margin-left: auto; font-weight: 400; font-size: 12.5px; color: var(--muted); }
+.log .l { font-family: var(--mono); font-size: 12px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.log .l .ts { color: var(--muted); }
+.log .l .sc { color: var(--ink-2); }
+.log .l.att { background: color-mix(in srgb, var(--warning) 14%, transparent); }
+
+/* drawer */
+.backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.28); opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 9; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(680px, 100vw); background: var(--surface); border-left: 1px solid var(--border); box-shadow: -12px 0 32px rgba(0,0,0,.12); overflow-y: auto; transform: translateX(100%); transition: transform .18s ease-out; z-index: 10; }
+body.drawer-open .drawer { transform: none; }
+body.drawer-open .backdrop { opacity: 1; pointer-events: auto; }
+.drawer-head { position: sticky; top: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 18px; display: flex; gap: 10px; align-items: center; z-index: 1; }
+.drawer-head .mono { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.drawer-head button { margin-left: auto; border: 1px solid var(--border); background: var(--raised); color: var(--ink); border-radius: 6px; padding: 3px 10px; cursor: pointer; font: 13px var(--sans); }
+.drawer-body { padding: 14px 18px 40px; }
+.drawer-body h3 { margin: 0 0 10px; font-size: 18px; }
+.drawer-body h5 { margin: 18px 0 6px; font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.screen { background: var(--screen-bg); color: var(--screen-ink); border-radius: 8px; padding: 10px 12px; max-height: 420px; overflow: auto; font-size: 11.5px; }
+details summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
+details pre { margin-top: 8px; max-height: 420px; overflow: auto; background: var(--sunken); padding: 10px; border-radius: 6px; }
+footer.foot { margin-top: 28px; color: var(--muted); font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+
+@media (max-width: 1100px) {
+  .lane { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 820px) {
+  .two { grid-template-columns: 1fr; }
+  nav.sections { display: none; }
+}
+@media (max-width: 560px) {
+  section > h2 { flex-wrap: wrap; }
+  section > h2 .aside { flex-basis: 100%; margin-left: 0; }
+  .lane { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/" title="Every epic">epic_loop</a>
+    <a class="crumb" id="crumb" href="/" hidden>All epics</a>
+    <span class="epic-title" id="epic-title">loading…</span>
+    <nav class="sections" id="nav"></nav>
+    <span id="counter"></span>
+    <span id="run-pill"></span>
+  </div>
+</header>
+<div class="wrap">
+  <div id="banner"></div>
+  <div id="index-view" hidden>
+    <section id="epics"></section>
+  </div>
+  <div id="epic-view" hidden>
+  <section id="log">
+    <h2>Log <span class="count" id="log-count"></span><span class="aside">loop.log in the integration worktree</span></h2>
+    <div class="card">
+      <div class="logbar">
+        <input id="log-filter" type="search" placeholder="Filter: a ticket id, an agent name, a word">
+        <select id="log-scope"><option value="">every scope</option></select>
+        <label><input id="log-follow" type="checkbox" checked> follow</label>
+        <button id="log-size" class="toggle" type="button">Show more</button>
+      </div>
+      <div class="log" id="log-lines"></div>
+    </div>
+  </section>
+  <section id="needs"></section>
+  <section id="integration"></section>
+  <section id="tickets"></section>
+  <section id="processes"></section>
+  <section id="agents"></section>
+  <section id="worktrees"></section>
+  <section id="attention"></section>
+  </div>
+  <footer class="foot" id="foot"></footer>
+</div>
+<div class="backdrop" id="backdrop"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head"><span id="drawer-badge"></span><span class="mono" id="drawer-id"></span><button id="drawer-close" type="button">Close</button></div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+let S = null, offset = 0, failures = 0, openId = null, detail = null, detailFor = null;
+// The path picks the view: / is every epic, /e/<epic> is one.
+const EPIC = location.pathname.startsWith("/e/") ? decodeURIComponent(location.pathname.slice(3)) : null;
+const html = {};
+const now = () => Date.now() + offset;
+
+// ---------------------------------------------------------------- formatting
+function dur(ms) {
+  if (ms == null || isNaN(ms)) return "—";
+  const s = Math.floor(Math.max(0, ms) / 1000);
+  if (s < 60) return s + "s";
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + "m " + String(s % 60).padStart(2, "0") + "s";
+  const h = Math.floor(m / 60);
+  if (h < 48) return h + "h " + String(m % 60).padStart(2, "0") + "m";
+  return Math.floor(h / 24) + "d";
+}
+// Times are rendered empty and filled by tick(), so a poll that changes no data changes no markup.
+const since = (t) => (t ? `<span data-since="${t}"></span>` : "—");
+const ago = (t) => (t ? `<span data-ago="${t}"></span>` : "—");
+const until = (t, due) => `<span data-until="${t}"${due ? ` data-due="${due}"` : ""}></span>`;
+// br and the loop write microseconds; not every browser parses more than milliseconds.
+const isoMs = (s) => (s ? Date.parse(String(s).replace(/(\.\d{3})\d+/, "$1")) : null);
+const clock = (s) => { const t = isoMs(s); return t ? new Date(t).toLocaleTimeString([], { hour12: false }) : ""; };
+const shortPath = (p) => { if (!p) return "—"; const parts = p.split("/"); return parts.length > 3 ? "…/" + parts.slice(-2).join("/") : p; };
+const bytes = (n) => (n == null ? "—" : n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.round(n / 1024) + " KB");
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + "s"}`;
+
+const STATES = {
+  merged: ["✓", "good", "merged"], closed: ["✓", "muted", "closed"], merging: ["⇢", "violet", "merging"], queued: ["⇢", "violet", "merge queue"],
+  working: ["●", "blue", "working"], needs_you: ["?", "warning", "needs you"], answered: ["↩", "warning", "answer queued"],
+  orphan: ["!", "serious", "no worker"], incomplete: ["△", "serious", "incomplete"], ready: ["○", "ink", "ready"],
+  waiting: ["◷", "muted", "waiting on deps"], open: ["○", "muted", "open"],
+};
+const ORDER = ["merged", "closed", "merging", "queued", "working", "needs_you", "answered", "orphan", "incomplete", "ready", "waiting", "open"];
+function badge(key, label) {
+  const [icon, tone, name] = STATES[key] || ["·", "muted", key];
+  return `<span class="badge t-${tone}${key === "working" ? " pulse" : ""}"><i>${icon}</i>${esc(label || name)}</span>`;
+}
+function agentBadge(st) {
+  const m = { working: ["●", "blue"], idle: ["○", "muted"], done: ["✓", "good"], blocked: ["?", "warning"] }[st] || ["·", "muted"];
+  return `<span class="badge t-${m[1]}${st === "working" ? " pulse" : ""}"><i>${m[0]}</i>${esc(st || "unknown")}</span>`;
+}
+const RUN = {
+  running: ["●", "blue", "running"], stopping: ["■", "serious", "stopping"], unresponsive: ["!", "critical", "not responding"],
+  starting: ["◌", "blue", "starting"], landed: ["✓", "good", "landed"], ended: ["■", "muted", "ended"], died: ["✕", "critical", "died"], stopped: ["■", "muted", "no run"],
+};
+function runPill(run) {
+  const [icon, tone, label] = RUN[run.state] || RUN.stopped;
+  return `<span class="badge t-${tone}${run.state === "running" ? " pulse" : ""}"><i>${icon}</i>${label}</span>`;
+}
+function copyCmd(text) {
+  return `<div class="cmd"><code>${esc(text)}</code><button type="button" data-copy="${esc(text)}">Copy</button></div>`;
+}
+function set(id, content) {
+  if (html[id] === content) return false;
+  html[id] = content;
+  const el = document.getElementById(id);
+  const open = new Set([...el.querySelectorAll("details[open][data-key]")].map((d) => d.dataset.key));
+  el.innerHTML = content;
+  el.querySelectorAll("details[data-key]").forEach((d) => { if (open.has(d.dataset.key)) d.open = true; });
+  return true;
+}
+
+// ---------------------------------------------------------------- the header
+function renderTop() {
+  const e = S.epic;
+  $("#epic-title").innerHTML = e ? `${esc(e.title)}<span class="mono">${esc(e.id)}</span>` : `<span class="mono">${esc(S.epic_id)}</span> <span class="muted">not found in br</span>`;
+  set("run-pill", runPill(S.run));
+  // The landing is listed with the rest but asks for nothing urgent, so it raises no count.
+  const needs = S.needs_you.filter((n) => n.kind !== "landed").length;
+  document.title = `${needs ? `(${needs}) ` : ""}epic_loop · ${S.epic_id}`;
+  set("counter", counter());
+  const nav = [["log", "Log"], ["needs", "Needs you", needs, needs > 0], ["integration", "Integration"], ["tickets", "Tickets", S.tickets.length], ["processes", "Processes"], ["agents", "Stray agents", S.stray_agents.length, S.stray_agents.length > 0], ["worktrees", "Stray worktrees", S.stray_worktrees.length, S.stray_worktrees.length > 0], ["attention", "History", S.attention.length]];
+  set("nav", nav.map(([id, name, n, alert]) => `<a href="#${id}"${alert ? ' class="alert"' : ""}>${name}${n != null ? `<span class="count">${n}</span>` : ""}</a>`).join(""));
+}
+
+// The header's counter: when the coordinator's next pass runs, or what stands in for it. A pass runs
+// pollIntervalMs after the previous one ends, and none runs while a merge does.
+function counter() {
+  const L = S.loop, run = S.run;
+  const tip = `A pass runs ${dur(S.config.poll_ms)} after the previous one ends; none runs while a merge does.${L && L.pass ? ` Last pass: ${L.pass}.` : ""}`;
+  let text = "";
+  if ((run.state === "running" || run.state === "stopping") && L) {
+    if (L.merging) text = `merging <span class="mono">${esc(L.merging)}</span> for ${since(L.merge_started_at)}`;
+    else if (L.activity) text = `pass ${esc(L.pass)}: ${esc(L.activity)}`;
+    else if (L.next_tick_at) text = `next pass ${until(L.next_tick_at, "due")}`;
+    else text = "starting";
+  } else if (run.state === "running") text = "starting";
+  else if (run.state === "unresponsive") text = `no board for ${since(run.board_at)}`;
+  else if (run.state === "starting") text = "no board yet";
+  else if (run.state === "died") text = `died ${ago(run.board_at)}`;
+  else if (run.state === "ended") text = `${esc(run.ended)} ${ago(run.ended_at)}`;
+  return text ? `<span class="counter" title="${esc(tip)}">${text}</span>` : "";
+}
+
+// ---------------------------------------------------------------- needs you
+function renderNeeds() {
+  const items = S.needs_you;
+  if (!items.length) return set("needs", `<h2>Needs you <span class="count">0</span></h2><div class="card empty">Nothing is waiting on you. Questions and escalations appear here, and in the integration session.</div>`);
+  set("needs", `<h2>Needs you <span class="count">${items.length}</span><span class="aside">answer with epic_loop answer, or steer the worker in its pane</span></h2>` + items.map((n) => {
+    const tone = n.kind === "question" ? "t-warning" : n.kind === "landed" ? "t-good" : "t-serious";
+    const link = n.ticket ? `<a class="ticket-link mono" data-ticket="${esc(n.ticket)}">${esc(n.ticket)}</a>` : "";
+    const q = n.question ? `<div class="question">${esc(n.question)}</div>` : "";
+    const opts = n.options && n.options.length ? `<div class="options">${n.options.map((o) => `<span>${esc(o)}</span>`).join("")}</div>` : "";
+    const unblock = n.unblock ? `<div class="sub">What it decides: ${esc(n.unblock)}</div>` : "";
+    const body = !n.body ? "" : n.kind === "question" ? `<details data-key="need-${esc(n.ticket)}"${n.question ? "" : " open"}><summary>The attention.md entry</summary><pre>${esc(n.body)}</pre></details>` : `<div class="sub" style="margin-top:6px">${esc(n.body)}</div>`;
+    const cmd = n.command && (n.kind !== "question" || n.has_worktree) ? copyCmd(n.command) : n.kind === "question" ? `<div class="sub muted">No worktree yet, so there is no worker to answer: unblock the ticket in br.</div>` : "";
+    const heading = n.ticket && n.heading.startsWith(n.ticket + " ") ? n.heading.slice(n.ticket.length + 1) : n.heading;
+    return `<div class="card need ${tone}"><div class="need-head">${link}<strong>${esc(heading)}</strong>${n.at ? `<span class="muted">${ago(isoMs(n.at))}</span>` : ""}</div>${n.title ? `<div class="sub">${esc(n.title)}</div>` : ""}${q}${opts}${unblock}${body}${cmd}</div>`;
+  }).join(""));
+}
+
+// ---------------------------------------------------------------- the integration branch, and a ticket's row
+function meter(label, from, max) {
+  if (!from || !max) return "";
+  return `<div class="meter-row"><span>${label}</span><div class="meter" data-meter="${from}" data-max="${max}"><b></b></div><span class="num">${since(from)} / ${dur(max)}</span></div>`;
+}
+function renderIntegration() {
+  const i = S.integration;
+  if (!i) return `<div class="card"><div class="none">No integration worktree for <span class="mono">${esc(S.branch)}</span>. <span class="mono">epic_loop init</span> creates it.</div></div>`;
+  const sess = i.session, L = S.loop;
+  const held = L && L.attention_held;
+  return `<div class="card lane">
+    <div><h4>Integration</h4><div class="line first mono">${esc(i.branch)}</div><div class="line">${i.head ? `<span class="mono">${esc(i.head.sha)}</span> ${esc(i.head.subject)}` : "—"}</div></div>
+    <div><h4>Branch</h4><div class="line first">${i.ahead != null ? `+${i.ahead} on ${esc(i.base)}` : "—"}</div><div class="line">${i.dirty ? `${badge("orphan", `${i.dirty} uncommitted`)} merges wait` : "clean"}</div></div>
+    <div><h4>Session</h4>${sess ? `<div class="line first mono">${esc(sess.name)}</div><div class="line">${agentBadge(sess.status)} <span class="mono">${esc(sess.pane_id)}</span>${sess.focused ? " · focused" : ""}</div>` : `<div class="none">no session named epic-…</div>`}</div>
+    <div><h4>Worktree</h4><div class="line first mono" title="${esc(i.path)}">${esc(shortPath(i.path))}</div><div class="line">workspace <span class="mono">${esc(i.workspace_id || "closed")}</span></div></div>
+    <div><h4>Attention delivery</h4><div class="line first">${held ? `held: ${esc(held)}` : S.attention.some((a) => a.delivered === false) ? "entries pending" : "up to date"}</div><div class="line">${plural(S.attention.length, "entry", "entries")}</div></div>
+  </div>`;
+}
+// Token counts as 812, 34k or 1.2M.
+function tok(n) { return n == null ? "—" : n >= 1e6 ? +(n / 1e6).toFixed(1) + "M" : n >= 1e3 ? Math.round(n / 1e3) + "k" : String(n); }
+// A ticket's context now against the window, amber past 300k and red past 500k, with its peak and tokens.
+function usageLines(u) {
+  if (!u) return "";
+  const cls = u.context > 500000 ? " over" : u.context > 300000 ? " warn" : "";
+  const input = u.tokens.input + u.tokens.cache_read + u.tokens.cache_write;
+  return `<div class="meter-row"><span>context</span><div class="meter${cls}"><b style="width:${Math.min(100, 100 * u.context / u.window)}%"></b></div><span class="num">${tok(u.context)} · ${Math.round(100 * u.context / u.window)}%</span></div>
+      <div class="line">peak ${tok(u.peak)} · ${tok(u.tokens.output)} out · ${tok(input)} in${u.sessions > 1 ? ` · ${u.sessions} sessions` : ""}</div>`;
+}
+// The panel's account of a ticket's tokens: totals, then what filled the context, by tool and by file.
+function usageSection(u) {
+  if (!u) return "";
+  const f = u.filled, filled = f.model + f.prompts + f.tools;
+  const row = (name, n, note) => `<tr><td class="mono" style="overflow-wrap:anywhere">${esc(name)}</td><td class="num">${tok(n)}</td><td class="num">${filled ? Math.round(100 * n / filled) + "%" : ""}</td><td class="muted" style="white-space:nowrap">${note || ""}</td></tr>`;
+  return `<h5>Tokens and context</h5>
+    <dl class="kv"><dt>Context</dt><dd>${tok(u.context)} now, ${Math.round(100 * u.context / u.window)}% of ${tok(u.window)} · peak ${tok(u.peak)}</dd>
+      <dt>Tokens</dt><dd>${tok(u.tokens.output)} output · ${tok(u.tokens.input)} input · ${tok(u.tokens.cache_read)} cache read · ${tok(u.tokens.cache_write)} cache write</dd>
+      <dt>Sessions</dt><dd>${u.sessions}${u.model ? ` · <span class="mono">${esc(u.model)}</span>` : ""}</dd></dl>
+    <h5>What filled the context</h5><table><tbody>${row("the model's own output (thinking, text, tool calls)", f.model)}${row("prompts and reminders", f.prompts)}${u.tools.map((t) => row(t.tool, t.tokens, plural(t.calls, "call"))).join("")}</tbody></table>${u.tool_count > u.tools.length ? `<div class="muted">and ${plural(u.tool_count - u.tools.length, "more tool")}</div>` : ""}
+    <h5>Files read most</h5>${u.files.length ? `<table><tbody>${u.files.map((x) => row(x.path, x.tokens, plural(x.reads, "read"))).join("")}</tbody></table>${u.file_count > u.files.length ? `<div class="muted">and ${plural(u.file_count - u.files.length, "more file")}</div>` : ""}` : `<span class="muted">none</span>`}`;
+}
+// A ticket's row: its worker process, herdr agent, worktree and what runs now. A cell with nothing in
+// it is a dash, so a ticket the loop has no hands on stays one short row.
+function laneRow(l) {
+  const w = l.worker, a = l.agent, wt = l.worktree, cfg = S.config;
+  const dash = `<span class="none">—</span>`;
+  const worker = w ? `<div class="line first mono">${esc(w.pid)}</div>
+      <div class="line">phase <b>${esc(w.phase)}</b>${w.adopted ? " · adopted" : ""}</div>
+      <div class="line">attempt ${w.attempt}/${cfg.max_attempts} · review ${w.review_round}/${cfg.review_rounds ?? "—"}</div>
+      <div class="line mono">${esc(w.model)}</div>
+      ${w.next_poll_at ? `<div class="line">next poll ${until(w.next_poll_at)}</div>` : w.queued_at ? `<div class="line">asked to merge ${ago(w.queued_at)}</div>` : ""}
+      ${w.stall_nudges || w.no_report_nudges || w.missing ? `<div class="line">nudges: stall ${w.stall_nudges}, no report ${w.no_report_nudges}${w.missing ? ` · missed ${w.missing} poll` : ""}</div>` : ""}`
+    : dash;
+  const use = usageLines(wt && wt.usage);
+  const agent = (a ? `<div class="line first mono">${esc(a.name || "(unnamed)")}</div>
+      <div class="line">${agentBadge(a.status)} <span class="mono">${esc(a.pane_id)}</span>${a.focused ? " · focused" : ""}</div>
+      ${a.title ? `<div class="line">${esc(a.title)}</div>` : ""}`
+    : w ? `<div class="none">no herdr agent named <span class="mono">${esc(w.agent_name)}</span></div>` : use ? "" : dash) + use;
+  const rep = wt && (wt.report ? `unread report: <b>${esc(wt.report.status)}</b>` : wt.last_report ? `last report: ${esc(wt.last_report.status)}` : "no report yet");
+  const tree = wt ? `<div class="line first mono">${esc(wt.branch)}</div>
+      <div class="line">${wt.head ? `<span class="mono">${esc(wt.head.sha)}</span> ${esc(wt.head.subject)}` : "—"}</div>
+      <div class="line">${wt.ahead != null ? `+${wt.ahead} on epic` : ""}${wt.dirty ? ` · ${wt.dirty} uncommitted` : " · clean"}</div>
+      <div class="line">${rep}${wt.answer ? " · answer queued" : ""}</div>`
+    : dash;
+  const clocks = w && w.phase === "running" ? meter("silence", w.last_change, cfg.silence_ms) + meter("turn", w.prompted_at, cfg.turn_max_ms) : "";
+  const cmds = l.commands.map((c) => `<div class="cmdline"><div class="what">${esc(c.label || c.line.split(" ").slice(0, 3).join(" "))}</div><div class="mono muted" title="${esc(c.line)}">pid ${esc(c.os_pid)} · <span data-since="${c.started_at}" data-long="30000"></span></div></div>`).join("");
+  const now_ = clocks || cmds ? clocks + cmds : w ? `<div class="none">${w.phase === "awaiting_human" ? "waiting on you" : "between polls"}</div>` : dash;
+  const deps = l.blocked_by.map((d) => `<span class="chip ${d.status === "closed" ? "done" : "open"}" title="${esc(d.id)}: ${esc(d.status)}">${esc(d.id)}</span>`).join("");
+  const issues = l.issues.length;
+  return `<tr class="click${issues ? " has-issues" : ""}" data-ticket="${esc(l.ticket)}">
+    <td class="tcell"><div class="line first"><a class="ticket-link mono" data-ticket="${esc(l.ticket)}">${esc(l.ticket)}</a></div><div class="line first">${esc(l.title)}</div><div class="line">${badge(l.state, l.label)}</div></td>
+    <td class="deps"><div class="chips">${deps || dash}</div></td>
+    <td>${worker}</td><td>${agent}</td><td>${tree}</td><td class="now">${now_}</td>
+  </tr>${issues ? `<tr class="click issues-row" data-ticket="${esc(l.ticket)}"><td colspan="6"><div class="issues">${l.issues.map((i) => `<div>${esc(i)}</div>`).join("")}</div></td></tr>` : ""}`;
+}
+function renderIntegrationSection() {
+  set("integration", `<h2>Integration<span class="aside">the epic branch, where every ticket fast-forwards</span></h2>${renderIntegration()}`);
+}
+
+// ---------------------------------------------------------------- tickets
+function layout(tickets) {
+  const byId = new Map(tickets.map((t) => [t.id, t]));
+  const depth = new Map();
+  const visit = (t, seen) => {
+    if (depth.has(t.id)) return depth.get(t.id);
+    if (seen.has(t.id)) return 0;
+    seen.add(t.id);
+    const deps = t.blocked_by.filter((d) => byId.has(d.id));
+    const d = deps.length ? 1 + Math.max(...deps.map((x) => visit(byId.get(x.id), seen))) : 0;
+    depth.set(t.id, d);
+    return d;
+  };
+  tickets.forEach((t) => visit(t, new Set()));
+  const cols = [];
+  tickets.forEach((t) => { const d = depth.get(t.id); (cols[d] = cols[d] || []).push(t); });
+  // One barycenter pass: a ticket sits near the tickets it waits on.
+  const row = new Map();
+  cols.forEach((col, ci) => {
+    if (ci > 0) {
+      const key = (t) => { const ys = t.blocked_by.filter((d) => row.has(d.id)).map((d) => row.get(d.id)); return ys.length ? ys.reduce((a, b) => a + b, 0) / ys.length : 1e9; };
+      col.sort((a, b) => key(a) - key(b));
+    }
+    col.forEach((t, i) => row.set(t.id, i));
+  });
+  return { cols, row, depth, byId };
+}
+function renderGraph(tickets) {
+  const edges = tickets.flatMap((t) => t.blocked_by.filter((d) => d.in_epic).map((d) => [d.id, t.id, d.status !== "closed"]));
+  if (!edges.length) return `<div class="sub muted" style="margin-bottom:10px">No blocks dependencies between these tickets; the loop may run any of them in parallel.</div>`;
+  const { cols, row, depth } = layout(tickets);
+  // A box fits the longest ticket id in full (12px monospace is about 7.3px a character).
+  const W = Math.max(208, Math.ceil(Math.max(...tickets.map((t) => t.id.length)) * 7.3) + 40), H = 48, GX = 56, GY = 10, P = 2;
+  const titleMax = Math.floor((W - 24) / 6.6);
+  const rows = Math.max(...cols.map((c) => c.length));
+  const width = cols.length * W + (cols.length - 1) * GX + P * 2, height = rows * H + (rows - 1) * GY + P * 2;
+  const pos = (id) => ({ x: P + depth.get(id) * (W + GX), y: P + row.get(id) * (H + GY) });
+  // An edge that skips columns runs along its source's row, which later columns rarely fill, and bends
+  // into the target only in the last gap, so it never passes under a ticket it does not reach.
+  const paths = edges.map(([from, to, open]) => {
+    const a = pos(from), b = pos(to), x1 = a.x + W, y1 = a.y + H / 2, x2 = b.x, y2 = b.y + H / 2, xs = x2 - GX, mx = xs + GX / 2;
+    const d = `M${x1},${y1}${xs > x1 ? ` L${xs},${y1}` : ""} C${mx},${y1} ${mx},${y2} ${x2 - 4},${y2}`;
+    const cls = `edge${open ? " open" : ""}`, data = `data-from="${esc(from)}" data-to="${esc(to)}"`;
+    return `<g class="link" ${data}><path class="${cls}" d="${d}"/><path class="${cls} head" d="M${x2 - 6},${y2 - 4} L${x2},${y2} L${x2 - 6},${y2 + 4}"/></g>`;
+  }).join("");
+  const nodes = tickets.map((t) => {
+    const p = pos(t.id), [icon, tone, name] = STATES[t.state] || ["·", "muted", t.state];
+    const title = t.title.length > titleMax ? t.title.slice(0, titleMax - 1) + "…" : t.title;
+    return `<g class="node t-${tone}" data-ticket="${esc(t.id)}" transform="translate(${p.x},${p.y})"><title>${esc(t.id)}: ${esc(t.title)} (${esc(t.label)})</title>
+      <rect class="box" width="${W}" height="${H}" rx="6"/><rect class="side" width="4" height="${H - 12}" x="0" y="6" rx="2"/>
+      <text class="id" x="12" y="19">${esc(t.id)}</text><text class="icon" x="${W - 12}" y="19" text-anchor="end">${icon}</text>
+      <text x="12" y="37">${esc(title)}</text></g>`;
+  }).join("");
+  return `<div class="graph" role="img" aria-label="Tickets by dependency: each column waits on the columns to its left"><svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${paths}${nodes}</svg></div>
+    <div class="legend" style="margin:8px 0 14px">${ORDER.filter((k) => S.counts[k]).map((k) => `<span class="t-${STATES[k][1]}"><b></b>${STATES[k][2]}</span>`).join("")}<span><svg width="26" height="8"><path d="M1,4 L25,4" class="edge open" style="fill:none;stroke:var(--ink-2);stroke-dasharray:4 3;stroke-width:1.5"/></svg>unmet dependency</span></div>`;
+}
+function renderTickets() {
+  const ts = S.tickets;
+  const table = `<div class="scroll"><table class="lanes"><thead><tr><th>Ticket</th><th>Waits on</th><th>Worker process</th><th>herdr agent</th><th>Worktree</th><th>Now</th></tr></thead><tbody>${S.lanes.map(laneRow).join("")}</tbody></table></div>`;
+  set("tickets", `<h2>Tickets <span class="count">${ts.length}</span><span class="aside">descendants of the epic in br, in br's order, with each one's worker process, herdr agent and worktree; click one for its details</span></h2>
+    <div class="card">${ts.length ? renderGraph(ts) + table : `<div class="empty">No tickets under this epic yet.</div>`}</div>`);
+}
+
+// ---------------------------------------------------------------- processes and agents
+function treeRows(n, prefix, last, top) {
+  const p = n.proc || {};
+  const guide = top ? "" : prefix + (last ? "└ " : "├ ");
+  const kids = n.children || [];
+  const cur = p.current && /collect|do_call|receive|sleep/.test(p.current) ? p.current : null;
+  return `<div class="row"><span class="name"><span class="guide">${esc(guide)}</span>${esc(n.name)}</span><span class="muted">${esc(p.pid || "")}</span><span class="num" title="messages waiting">mbox ${p.mailbox ?? "—"}</span><span class="num muted">${bytes(p.memory)}</span>${cur ? `<span class="cur">in ${esc(cur)}</span>` : ""}</div>`
+    + kids.map((k, i) => treeRows(k, top ? "" : prefix + (last ? "  " : "│ "), i === kids.length - 1, false)).join("");
+}
+function renderProcesses() {
+  const P = S.processes;
+  let left;
+  if (P) {
+    const vm = P.vm;
+    left = `<div class="card"><h4 class="muted" style="margin:0 0 8px;font-weight:500">Supervision tree</h4><div class="tree">${P.tree.map((n) => treeRows(n, "", true, true)).join("") || '<div class="empty">no supervisor</div>'}</div>
+      <dl class="kv" style="margin-top:12px"><dt>OS pid</dt><dd class="mono">${esc(vm.os_pid)}</dd><dt>Up</dt><dd>${dur(vm.uptime_ms)}</dd><dt>Memory</dt><dd>${bytes(vm.memory)} · ${vm.processes} processes</dd><dt>Runtime</dt><dd>OTP ${esc(vm.otp)} · Elixir ${esc(vm.elixir)}</dd></dl></div>`;
+  } else {
+    left = `<div class="card empty">No live run, so there are no loop processes to show. While a run of this epic is going, its board.json has the coordinator, the workers and the commands they run.</div>`;
+  }
+  const cmds = P ? P.commands : [];
+  const cmdTable = P ? (cmds.length ? `<div class="scroll"><table><thead><tr><th>Who</th><th>What</th><th>Where</th><th>OS pid</th><th>For</th></tr></thead><tbody>${cmds.map((c) => `<tr><td style="white-space:nowrap">${c.ticket ? `<a class="ticket-link mono" data-ticket="${esc(c.ticket)}">${esc(c.ticket)}</a>` : esc(c.role)}</td><td>${c.label ? `<div>${esc(c.label)}</div>` : ""}<div class="mono muted" style="overflow-wrap:anywhere">${esc(c.line.slice(0, 160))}</div></td><td class="mono" title="${esc(c.cwd)}">${esc(shortPath(c.cwd))}</td><td class="mono">${esc(c.os_pid)}</td><td class="num" style="white-space:nowrap"><span data-since="${c.started_at}" data-long="30000"></span></td></tr>`).join("")}</tbody></table></div>` : `<div class="empty">No external command is running.</div>`) : `<div class="empty">—</div>`;
+  set("processes", `<h2>Processes<span class="aside">Elixir processes in this run, and the commands they wait on</span></h2>
+    <div class="two">${left}<div class="card"><h4 class="muted" style="margin:0 0 8px;font-weight:500">External commands in flight</h4>${cmdTable}</div></div>`);
+}
+
+// ---------------------------------------------------------------- strays, attention, log
+// Only what no ticket row and no integration section accounts for; the rest is in the ticket rows.
+function renderAgents() {
+  const as = S.stray_agents;
+  const rows = as.map((a) => `<tr${a.ticket ? ` class="click" data-ticket="${esc(a.ticket)}"` : ""}><td class="mono" style="white-space:nowrap">${esc(a.name || "(unnamed)")}</td><td>${esc(a.why)}</td>
+    <td>${agentBadge(a.status)}${a.focused ? ' <span class="muted">focused</span>' : ""}</td><td class="mono">${esc(a.pane_id)}</td>
+    <td class="mono" title="${esc(a.cwd)}">${esc(shortPath(a.worktree || a.cwd))}</td><td class="ink2">${esc(a.title || "")}</td></tr>`).join("");
+  set("agents", `<h2>Stray and orphaned agents <span class="count">${as.length}</span><span class="aside">herdr agents in the epic's worktrees that no ticket row or the integration session accounts for</span></h2>
+    <div class="card">${as.length ? `<div class="scroll"><table><thead><tr><th>Agent</th><th>Why it is here</th><th>Status</th><th>Pane</th><th>Worktree</th><th>Title</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="empty">None. Every agent in the epic's worktrees is a ticket's or the integration session.</div>`}</div>`);
+}
+function renderWorktrees() {
+  const ws = S.stray_worktrees;
+  const rows = ws.map((w) => `<tr><td class="mono" style="white-space:nowrap">${esc(w.branch || "(detached)")}</td><td>${esc(w.why)}</td><td class="mono" title="${esc(w.path)}">${esc(shortPath(w.path))}</td>
+      <td>${w.missing ? badge("orphan", "folder gone") : w.head ? `<span class="mono">${esc(w.head.sha)}</span> ${esc(w.head.subject)} <span class="muted">${ago(w.head.time)}</span>` : "—"}</td>
+      <td class="num">${w.ahead != null ? "+" + w.ahead : "—"}</td><td class="num">${w.dirty ? w.dirty : '<span class="muted">clean</span>'}</td><td class="mono">${esc(w.workspace_id || "—")}</td></tr>`).join("");
+  set("worktrees", `<h2>Stray and orphaned worktrees <span class="count">${ws.length}</span><span class="aside">cut from the epic's marker commit but matching no ticket; nothing in them merges</span></h2>
+    <div class="card">${ws.length ? `<div class="scroll"><table><thead><tr><th>Branch</th><th>Why it is here</th><th>Path</th><th>Head</th><th>Ahead of the epic</th><th>Uncommitted</th><th>Workspace</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="empty">None. Every worktree cut from the epic belongs to a ticket or is the integration worktree.</div>`}</div>`);
+}
+// Everything the loop reported, for reference: what still needs you is in Needs you.
+function renderAttention() {
+  const es = S.attention, open = es.filter((e) => e.status === "open").length;
+  const status = (e) => (e.status === "open" ? badge("needs_you", "open") : e.status === "resolved" ? '<span class="muted">resolved</span>' : "");
+  const delivery = (e) => (e.delivered === false ? badge("needs_you", "not yet delivered") : e.delivered ? '<span class="muted">delivered to the session</span>' : "");
+  set("attention", `<details class="history" data-key="attention-history"><summary><h2>Attention history <span class="count">${es.length}</span><span class="aside">attention.md, newest first${es.length ? `; ${open} still open in Needs you` : ""}</span></h2></summary>
+    <div class="card">${es.length ? es.map((e) => `<div class="entry"><div class="entry-head"><strong>${esc(e.title)}</strong>${status(e)}<span class="muted">${ago(isoMs(e.ts))}</span>${delivery(e)}</div>${e.body ? `<details data-key="att-${esc(e.ts)}"><summary>${esc(e.body.split("\n")[0].slice(0, 140))}</summary><pre>${esc(e.body)}</pre></details>` : ""}</div>`).join("") : `<div class="empty">attention.md is empty.</div>`}</div></details>`);
+}
+let logKey = "";
+function renderLog() {
+  const log = S.log, f = $("#log-filter").value.trim().toLowerCase(), scope = $("#log-scope").value;
+  const scopes = [...new Set(log.map((l) => l.scope))].sort();
+  const sel = $("#log-scope");
+  const want = ["", ...scopes].join("|");
+  if (sel.dataset.have !== want) {
+    sel.innerHTML = `<option value="">every scope</option>` + scopes.map((s) => `<option${s === scope ? " selected" : ""}>${esc(s)}</option>`).join("");
+    sel.dataset.have = want;
+  }
+  const lines = log.filter((l) => (!scope || l.scope === scope) && (!f || (l.scope + " " + l.msg).toLowerCase().includes(f)));
+  const key = `${log.length}|${log.length && log[log.length - 1].ts}|${f}|${scope}`;
+  $("#log-count").textContent = log.length ? `${lines.length === log.length ? "" : lines.length + " of "}${log.length} lines` : "";
+  if (key === logKey) return;
+  logKey = key;
+  const box = $("#log-lines");
+  const atEnd = box.scrollTop + box.clientHeight >= box.scrollHeight - 8;
+  box.innerHTML = lines.length ? lines.map((l) => `<div class="l${l.scope === "ATTENTION" ? " att" : ""}"><span class="ts">${esc(clock(l.ts))}</span> <span class="sc">[${esc(l.scope)}]</span> ${esc(l.msg)}</div>`).join("") : `<div class="empty">${log.length ? "No line matches." : "No log yet."}</div>`;
+  if ($("#log-follow").checked && (atEnd || !box.dataset.done)) box.scrollTop = box.scrollHeight;
+  box.dataset.done = "1";
+}
+function renderFoot() {
+  set("foot", `<span>collected ${ago(S.collected_at)} in ${S.collect_ms} ms</span><span>config <span class="mono">${esc(S.config.path)}</span></span><span>repo <span class="mono">${esc(S.config.repo)}</span></span><span>marker <span class="mono">${esc((S.marker || "none").slice(0, 8))}</span></span><span>served at ${esc(S.run.url)}</span>`);
+}
+
+// ---------------------------------------------------------------- the ticket drawer
+function openTicket(id) {
+  openId = id;
+  if (location.hash !== "#ticket=" + encodeURIComponent(id)) history.replaceState(null, "", "#ticket=" + encodeURIComponent(id));
+  if (detailFor !== id) { detail = null; detailFor = id; }
+  document.body.classList.add("drawer-open");
+  $("#drawer").setAttribute("aria-hidden", "false");
+  renderDrawer();
+  loadDetail();
+}
+function closeTicket() {
+  if (!openId) return;
+  openId = null;
+  history.replaceState(null, "", location.pathname);
+  document.body.classList.remove("drawer-open");
+  $("#drawer").setAttribute("aria-hidden", "true");
+}
+async function loadDetail() {
+  if (!openId) return;
+  const id = openId;
+  try {
+    const r = await fetch(`/api/ticket?epic=${encodeURIComponent(EPIC)}&id=${encodeURIComponent(id)}`, { cache: "no-store" });
+    if (r.ok && openId === id) { detail = await r.json(); detail.at = now(); renderDrawer(); tick(); }
+  } catch (e) { /* the state poll reports a lost server */ }
+}
+function renderDrawer() {
+  if (!openId || !S) return;
+  const t = S.tickets.find((x) => x.id === openId);
+  if (!t) { set("drawer-body", `<div class="empty">This ticket is no longer under the epic.</div>`); return; }
+  set("drawer-badge", badge(t.state, t.label));
+  $("#drawer-id").textContent = t.id;
+  const lane = S.lanes.find((l) => l.ticket === t.id);
+  const d = detail && detail.id === t.id ? detail : null;
+  const chips = (list) => list.length ? `<div class="chips">${list}</div>` : `<span class="muted">none</span>`;
+  const deps = chips(t.blocked_by.map((x) => `<a class="chip ${x.status === "closed" ? "done" : "open"}" data-ticket="${esc(x.id)}" title="${esc(x.status)}">${esc(x.id)}</a>`).join(""));
+  const blocks = chips(t.blocks.map((x) => `<a class="chip" data-ticket="${esc(x)}">${esc(x)}</a>`).join(""));
+  const log = S.log.filter((l) => l.scope === t.id || (lane && lane.worker && l.scope === lane.worker.agent_name) || (lane && lane.agent && l.scope === lane.agent.name) || l.msg.includes(t.id));
+  const report = d && d.reports && d.reports[0];
+  const rep = report ? `<dl class="kv"><dt>File</dt><dd class="mono">${esc(report.file)}${report.unread ? " (not read by the loop yet)" : ""}</dd><dt>Status</dt><dd><b>${esc(report.report.status)}</b></dd>
+      ${report.report.question ? `<dt>Question</dt><dd>${esc(report.report.question)}</dd>` : ""}${report.report.options && report.report.options.length ? `<dt>Options</dt><dd>${esc(report.report.options.join(" | "))}</dd>` : ""}
+      ${report.report.notes ? `<dt>Notes</dt><dd>${esc(report.report.notes)}</dd>` : ""}${report.report.commits ? `<dt>Commits</dt><dd class="mono">${esc([].concat(report.report.commits).join(", "))}</dd>` : ""}
+      ${report.report.checks ? `<dt>Checks</dt><dd>${[].concat(report.report.checks).map((c) => `<div class="mono">${esc(c.result)} · ${esc(c.cmd)}</div>`).join("")}</dd>` : ""}</dl>` : `<span class="muted">${t.worktree ? "no report yet" : "no worktree"}</span>`;
+  set("drawer-body", `<h3>${esc(t.title)}</h3>
+    <dl class="kv"><dt>br status</dt><dd>${esc(t.status)}${t.assignee ? ` · ${esc(t.assignee)}` : ""}</dd><dt>Type</dt><dd>${esc(t.type)} · P${esc(t.priority)}</dd><dt>Mode</dt><dd>${esc(t.mode)}${t.model ? ` · model ${esc(t.model)}` : ""}</dd>
+      <dt>Waits on</dt><dd>${deps}</dd><dt>Blocks</dt><dd>${blocks}</dd><dt>Worktree</dt><dd class="mono">${esc(t.worktree || "none")}</dd>${lane && lane.agent ? `<dt>Agent</dt><dd class="mono">${esc(lane.agent.name)} · ${esc(lane.agent.pane_id)}</dd>` : ""}<dt>Updated</dt><dd>${ago(isoMs(t.updated_at))}</dd></dl>
+    ${t.problems.length ? `<h5>Why it cannot dispatch</h5>${t.problems.map((p) => `<div>${badge("incomplete", p)}</div>`).join("")}` : ""}
+    <h5>Owned paths</h5>${t.owned.length ? t.owned.map((p) => `<div class="mono">${esc(p)}</div>`).join("") : '<span class="muted">none</span>'}
+    <h5>Acceptance checks</h5>${t.checks.length ? t.checks.map((c) => `<div class="mono" style="overflow-wrap:anywhere">$ ${esc(c)}</div>`).join("") : '<span class="muted">none</span>'}
+    ${t.close_reason ? `<h5>Close reason</h5><div class="prose">${esc(t.close_reason)}</div>` : ""}
+    ${t.notes ? `<h5>Notes</h5><div class="prose">${esc(t.notes)}</div>` : ""}
+    <h5>Latest report</h5>${rep}
+    ${usageSection(lane && lane.worktree && lane.worktree.usage)}
+    ${d && d.times ? `<h5>Time</h5><pre style="white-space:pre;overflow-x:auto">${esc(d.times)}</pre>` : ""}
+    ${d && d.screen ? `<h5>Agent screen <span style="text-transform:none;letter-spacing:0">${ago(d.at)}</span></h5><pre class="screen">${esc(d.screen)}</pre>` : ""}
+    ${d && d.commits ? `<h5>Commits on the ticket branch</h5>${d.commits.length ? d.commits.map((c) => `<div><span class="mono">${esc(c.sha)}</span> ${esc(c.subject || "")} <span class="muted">${c.time ? ago(c.time) : ""}</span></div>`).join("") : '<span class="muted">none yet</span>'}` : ""}
+    ${d && d.diffstat ? `<h5>Diffstat against the epic branch</h5><pre>${esc(d.diffstat)}</pre>` : ""}
+    <h5>Description</h5><div class="prose">${esc(t.description || "—")}</div>
+    ${t.comments.length ? `<h5>Comments</h5>${t.comments.map((c) => `<div class="entry"><div class="muted">${esc(c.author)} · ${ago(isoMs(c.created_at))}</div><div class="prose">${esc(c.text)}</div></div>`).join("")}` : ""}
+    ${d && d.brief ? `<h5>Brief</h5><details data-key="brief"><summary>brief.md, as the worker's last start was given it</summary><pre>${esc(d.brief)}</pre></details>` : ""}
+    ${d && d.reports && d.reports.length > 1 ? `<h5>Every report</h5>${d.reports.map((r, i) => `<details data-key="rep-${i}"><summary class="mono">${esc(r.file)} · ${esc(r.report.status)}</summary><pre>${esc(JSON.stringify(r.report, null, 2))}</pre></details>`).join("")}` : ""}
+    <h5>Log lines</h5>${log.length ? `<div class="log">${log.slice(-80).map((l) => `<div class="l"><span class="ts">${esc(clock(l.ts))}</span> <span class="sc">[${esc(l.scope)}]</span> ${esc(l.msg)}</div>`).join("")}</div>` : '<span class="muted">none in the recent log</span>'}`);
+}
+
+// ---------------------------------------------------------------- the loop of the page
+function render() {
+  renderTop(); renderNeeds(); renderIntegrationSection(); renderTickets(); renderProcesses(); renderAgents(); renderWorktrees(); renderAttention(); renderLog(); renderFoot(); renderDrawer();
+  set("banner", S.errors.length ? `<div class="banner">${S.errors.map((e) => `<div>${esc(e)}</div>`).join("")}</div>` : "");
+  tick();
+}
+async function poll() {
+  try {
+    const r = await fetch(EPIC ? `/api/state?epic=${encodeURIComponent(EPIC)}` : "/api/epics", { cache: "no-store" });
+    if (r.status === 404 && EPIC) {
+      failures = 0;
+      $("#epic-title").textContent = EPIC;
+      set("banner", `<div class="banner info">${esc(await r.text())}.${copyCmd(`epic_loop status --epic ${EPIC} --config <its config.json>`)}</div>`);
+    } else {
+      if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+      const s = await r.json();
+      offset = s.now - Date.now();
+      failures = 0;
+      if (EPIC) {
+        S = s;
+        const want = location.hash.startsWith("#ticket=") ? decodeURIComponent(location.hash.slice(8)) : null;
+        if (want && !openId) openTicket(want);
+        render();
+      } else {
+        renderIndex(s);
+      }
+    }
+  } catch (e) {
+    failures++;
+    set("banner", `<div class="banner"><b>The dashboard does not answer</b> (${esc(e.message || e)}). Its process has stopped; the loops it shows keep running without it. This page keeps retrying. Start it again with:${copyCmd("epic_loop dashboard")}</div>`);
+  }
+  setTimeout(poll, document.hidden ? 10000 : failures ? 5000 : EPIC ? 2000 : 3000);
+}
+
+// ---------------------------------------------------------------- the front page: every epic
+function nowLine(e) {
+  const L = e.loop, run = e.run, x = e.last;
+  if (run.state === "running" || run.state === "stopping") {
+    if (L && L.merging) return `merging <span class="mono">${esc(L.merging)}</span> for ${since(L.merge_started_at)}`;
+    if (L && L.activity) return `pass ${esc(L.pass)}: ${esc(L.activity)}`;
+    if (L && L.next_tick_at) return `next pass ${until(L.next_tick_at, "due now")}`;
+    return "starting";
+  }
+  if (run.state === "unresponsive") return `board last written ${ago(run.board_at)}`;
+  if (run.state === "starting") return `pid ${esc(run.pid)}, no board yet`;
+  if (run.state === "died") return `last seen ${ago(run.board_at)}${x && x.merging ? `, merging <span class="mono">${esc(x.merging)}</span>` : ""}`;
+  if (run.state === "ended") return `${esc(run.ended)} ${ago(run.ended_at)}`;
+  if (run.state === "landed") return "every ticket merged";
+  return e.integration ? "no run yet" : "no integration worktree";
+}
+function epicRow(e) {
+  const c = e.counts || {}, total = c.total || 0, merged = (c.merged || 0) + (c.closed || 0);
+  const segs = ORDER.filter((k) => c[k]).map((k) => `<span class="t-${STATES[k][1]}" style="flex:${c[k]}" title="${esc(STATES[k][2])}: ${c[k]}"></span>`).join("");
+  const href = `/e/${encodeURIComponent(e.epic_id)}`;
+  const repo = (e.repo || "").split("/").pop();
+  return `<tr class="click" data-href="${esc(href)}">
+    <td><a class="epic-name" href="${esc(href)}">${esc(e.title || e.epic_id)}</a><div class="mono muted">${esc(e.epic_id)}${repo ? ` · ${esc(repo)}` : ""}</div>${e.errors && e.errors.length ? `<div class="sub">${badge("orphan", `${e.errors.length} error${e.errors.length > 1 ? "s" : ""}`)}</div>` : ""}</td>
+    <td>${runPill(e.run)}</td>
+    <td class="ink2">${nowLine(e)}</td>
+    <td>${total ? `<div class="segments">${segs}</div><div class="sub num">${merged}/${total} merged</div>` : '<span class="muted">no tickets</span>'}</td>
+    <td>${e.needs ? badge("needs_you", String(e.needs)) : '<span class="muted">—</span>'}</td>
+    <td class="num">${e.in_flight}<span class="muted">/${esc(e.max_workers ?? "—")}</span></td>
+  </tr>`;
+}
+function renderIndex(data) {
+  const all = data.epics;
+  const finished = (e) => e.run.state === "landed" || e.epic_status === "closed";
+  // What asks for the person first, then what runs, each in registry order.
+  const rank = (e) => (e.needs ? 0 : ["running", "stopping", "unresponsive", "starting", "died"].includes(e.run.state) ? 1 : 2);
+  const active = all.filter((e) => !finished(e)).map((e, i) => [e, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(([e]) => e);
+  const done = all.filter(finished);
+  const needs = all.reduce((n, e) => n + (e.needs || 0), 0);
+  document.title = `${needs ? `(${needs}) ` : ""}epic_loop`;
+  $("#epic-title").textContent = "Every epic";
+  const head = `<thead><tr><th>Epic</th><th>Run</th><th>Now</th><th>Tickets</th><th>Needs you</th><th>In flight</th></tr></thead>`;
+  const table = (rows) => `<div class="card"><div class="scroll"><table class="epics">${head}<tbody>${rows.map(epicRow).join("")}</tbody></table></div></div>`;
+  set("epics", all.length
+    ? `<h2>Epics <span class="count">${active.length}</span><span class="aside">every epic a command registered; click one for its page</span></h2>
+       ${active.length ? table(active) : '<div class="card empty">No epic is in progress.</div>'}
+       ${done.length ? `<section><h2>Finished <span class="count">${done.length}</span><span class="aside">landed or closed in br</span></h2>${table(done)}<div class="sub muted" style="margin-top:8px">Take one off this page:</div>${copyCmd("epic_loop forget --epic <id>")}</section>` : ""}`
+    : `<h2>Epics <span class="count">0</span></h2><div class="card empty">No epic is registered yet. Every epic_loop command that names an epic and its config registers it, for example:${copyCmd("epic_loop status --epic <id> --config <file>")}</div>`);
+  set("foot", `<span>${plural(all.length, "epic")} registered in <span class="mono">${esc(data.registry)}</span></span><span>served at ${esc(location.origin)}/</span>`);
+  if (!failures) set("banner", "");
+  tick();
+}
+function tick() {
+  const n = now();
+  document.querySelectorAll("[data-since]").forEach((el) => {
+    const ms = n - Number(el.dataset.since);
+    el.textContent = dur(ms);
+    if (el.dataset.long) el.classList.toggle("long", ms >= Number(el.dataset.long));
+  });
+  document.querySelectorAll("[data-ago]").forEach((el) => { el.textContent = dur(n - Number(el.dataset.ago)) + " ago"; });
+  document.querySelectorAll("[data-until]").forEach((el) => {
+    const ms = Number(el.dataset.until) - n;
+    el.textContent = ms > 0 ? (el.dataset.bare ? "" : "in ") + dur(ms) : el.dataset.due || "due";
+  });
+  document.querySelectorAll("[data-meter]").forEach((el) => {
+    const ratio = (n - Number(el.dataset.meter)) / Number(el.dataset.max);
+    el.firstElementChild.style.width = Math.min(100, Math.max(0, ratio * 100)) + "%";
+    el.classList.toggle("warn", ratio >= 0.6 && ratio < 1);
+    el.classList.toggle("over", ratio >= 1);
+  });
+}
+document.addEventListener("click", (e) => {
+  const c = e.target.closest("[data-copy]");
+  if (c) {
+    navigator.clipboard.writeText(c.dataset.copy).then(() => { c.textContent = "Copied"; setTimeout(() => { c.textContent = "Copy"; }, 1200); }, () => { c.textContent = "Select it"; });
+    return;
+  }
+  const t = e.target.closest("[data-ticket]");
+  if (t) { e.preventDefault(); openTicket(t.dataset.ticket); return; }
+  const row = e.target.closest("[data-href]");
+  if (row && !e.target.closest("a")) location.href = row.dataset.href;
+});
+// Hovering a ticket in the graph picks out the edges into and out of it.
+document.addEventListener("mouseover", (e) => {
+  const g = e.target.closest(".graph");
+  if (!g) return;
+  const node = e.target.closest(".node");
+  g.classList.toggle("focus", !!node);
+  g.querySelectorAll(".link").forEach((l) => l.classList.toggle("hl", !!node && (l.dataset.from === node.dataset.ticket || l.dataset.to === node.dataset.ticket)));
+});
+$("#drawer-close").addEventListener("click", closeTicket);
+$("#backdrop").addEventListener("click", closeTicket);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeTicket(); });
+["input", "change"].forEach((ev) => { $("#log-filter").addEventListener(ev, () => S && renderLog()); $("#log-scope").addEventListener(ev, () => S && renderLog()); });
+$(EPIC ? "#epic-view" : "#index-view").hidden = false;
+$("#crumb").hidden = !EPIC;
+// The log's size is a per-viewer convenience: remembered in this browser when it can be, and short otherwise.
+function logSize(tall) {
+  $("#log-lines").classList.toggle("tall", tall);
+  $("#log-size").textContent = tall ? "Show less" : "Show more";
+  if ($("#log-follow").checked) $("#log-lines").scrollTop = $("#log-lines").scrollHeight;
+}
+$("#log-size").addEventListener("click", () => {
+  const tall = !$("#log-lines").classList.contains("tall");
+  logSize(tall);
+  try { localStorage.setItem("epic_loop.log.tall", tall ? "1" : ""); } catch (e) { /* not remembered */ }
+});
+try { logSize(localStorage.getItem("epic_loop.log.tall") === "1"); } catch (e) { logSize(false); }
+setInterval(tick, 500);
+setInterval(() => { if (openId) loadDetail(); }, 3000);
+poll();
+</script>
+</body>
+</html>

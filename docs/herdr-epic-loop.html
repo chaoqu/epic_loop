@@ -1,0 +1,475 @@
+<title>Herdr Epic Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F5F7F6;--surface:#FFFFFF;--ink:#18212B;--muted:#5A6672;--rule:#D2D9D7;
+  --accent:#0E6B87;--accent-soft:#DCEAF0;--human:#B4531D;--human-soft:#F4E4D9;
+  --pass:#2B7A4B;--warn:#A3711A;--note:#E8F1F4;--code:#ECF0EF;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --display:'Archivo','IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0F1418;--surface:#161C22;--ink:#E3E8EC;--muted:#97A2AC;--rule:#2A333B;
+  --accent:#62B4CF;--accent-soft:#173341;--human:#E48D58;--human-soft:#3A2416;
+  --pass:#62BD8A;--warn:#D9A441;--note:#192A31;--code:#1A222A;
+}}
+:root[data-theme="dark"]{
+  --ground:#0F1418;--surface:#161C22;--ink:#E3E8EC;--muted:#97A2AC;--rule:#2A333B;
+  --accent:#62B4CF;--accent-soft:#173341;--human:#E48D58;--human-soft:#3A2416;
+  --pass:#62BD8A;--warn:#D9A441;--note:#192A31;--code:#1A222A;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.55 var(--sans);padding-inline:16px;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+.page{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:196px minmax(0,1fr);gap:56px;padding-block:44px 96px}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 28px);align-self:start;font-size:13px;line-height:1.4}
+.toc-label{font:500 10.5px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--rule)}
+.toc li a{display:block;padding:5px 0 5px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--muted);text-decoration:none}
+.toc li a:hover,.toc li a:focus-visible{color:var(--ink);border-left-color:var(--accent);outline:none}
+.toc .n{font:500 11px var(--mono);color:var(--accent);margin-right:7px}
+main{min-width:0}
+header{margin-bottom:44px}
+.eyebrow{font:500 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1{font:700 46px/1.04 var(--display);letter-spacing:-.022em;margin:0 0 18px;text-wrap:balance}
+.lede{font-size:18.5px;line-height:1.5;max-width:64ch;margin:0 0 30px}
+.glance{display:grid;grid-template-columns:repeat(3,1fr);gap:0 24px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:0;padding:4px 0}
+.glance div{padding:12px 0;font-size:14px;line-height:1.45}
+.glance dt{font:500 10.5px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.glance dd{margin:0}
+section{margin-top:60px}
+h2{font:600 28px/1.15 var(--display);letter-spacing:-.015em;margin:0 0 16px;text-wrap:balance}
+h2 .num{font:500 15px var(--mono);color:var(--accent);margin-right:12px;position:relative;top:-3px}
+h3{font:600 18.5px/1.25 var(--display);margin:34px 0 10px}
+p,ul,ol{max-width:66ch}
+p{margin:0 0 14px}
+ul,ol{padding-left:1.2em;margin:0 0 16px}
+li{margin-bottom:7px}
+li b,p b{font-weight:600}
+code{font:.9em var(--mono);background:var(--code);padding:1px 5px;border-radius:2px}
+pre{background:var(--code);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;overflow-x:auto;font:12.75px/1.55 var(--mono);margin:0 0 18px;max-width:100%}
+pre code{background:none;padding:0;font:inherit}
+.cm{color:var(--muted)}
+.tbl{overflow-x:auto;margin:0 0 20px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font:500 10.5px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.45}
+td:last-child,th:last-child{padding-right:0}
+.stages{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin:20px 0 12px}
+.stage{border-top:2px solid var(--accent);padding-top:10px;font-size:13px;line-height:1.42}
+.stage.human{border-top-color:var(--human)}
+.stage .k{font:500 11px var(--mono);color:var(--accent);display:block;margin-bottom:6px}
+.stage.human .k{color:var(--human)}
+.stage .t{font:600 15.5px/1.2 var(--display);display:block;margin-bottom:6px}
+.stage .who{font:11.5px/1.4 var(--mono);color:var(--muted);display:block;margin-bottom:8px}
+.legend{font-size:12.5px;color:var(--muted);display:flex;gap:20px;flex-wrap:wrap;margin:0 0 26px}
+.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:7px;background:var(--accent)}
+.legend i.human{background:var(--human)}
+figure{margin:26px 0 32px;padding:0}
+.fig-scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:3px;background:var(--surface);padding:18px 14px}
+figure svg{display:block;width:100%;height:auto;color:var(--ink)}
+figcaption{font-size:13.5px;color:var(--muted);line-height:1.5;margin-top:10px;max-width:72ch}
+.callout{border-left:3px solid var(--human);background:var(--surface);padding:12px 16px;margin:0 0 20px;max-width:70ch;font-size:15px;line-height:1.5}
+.callout b{color:var(--human)}
+.chip{display:inline-block;font:500 11px var(--mono);border:1px solid var(--rule);border-radius:2px;padding:1px 6px;background:var(--surface);vertical-align:middle}
+.chip.blocked{border-color:var(--human);color:var(--human)}
+.chip.done{border-color:var(--pass);color:var(--pass)}
+.status{font:500 10.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:2px;white-space:nowrap}
+.status.have{background:var(--accent-soft);color:var(--accent)}
+.status.build{background:var(--human-soft);color:var(--human)}
+.src{font-size:13.5px;color:var(--muted);max-width:none}
+.src li{margin-bottom:5px}
+.foot{margin-top:56px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted);max-width:none}
+:target{scroll-margin-top:24px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+@media (max-width:900px){
+  .page{grid-template-columns:1fr;gap:26px;padding-block:28px 64px}
+  .toc{position:static}.toc ol{display:flex;flex-wrap:wrap;gap:2px 16px;border-left:0}.toc li a{padding:3px 0;border-left:0;margin:0}
+  .stages{grid-template-columns:repeat(3,1fr)}.glance{grid-template-columns:repeat(2,1fr)}h1{font-size:36px}
+}
+@media (max-width:560px){.stages{grid-template-columns:repeat(2,1fr)}.glance{grid-template-columns:1fr}h1{font-size:32px}.lede{font-size:17px}}
+/* diagram marks: every color comes from the page tokens */
+svg .box{fill:var(--surface);stroke:currentColor;stroke-width:1.25}
+svg .box.human{stroke:var(--human)}svg .box.accent{stroke:var(--accent);stroke-width:1.6}
+svg .ptxt{font:600 12.5px var(--sans);fill:currentColor}svg .ptxt.human{fill:var(--human)}
+svg .psub{font:10.5px var(--sans);fill:var(--muted)}
+svg .life{stroke:currentColor;stroke-opacity:.35;stroke-dasharray:3 4}svg .life.human{stroke:var(--human)}
+svg .m{stroke:currentColor;stroke-width:1.25;fill:none}
+svg .m.human{stroke:var(--human)}svg .m.accent{stroke:var(--accent)}svg .m.pass{stroke:var(--pass)}svg .m.warn{stroke:var(--warn)}
+svg .lbl{font:11.5px var(--mono);fill:currentColor}
+svg .lbl.human{fill:var(--human)}svg .lbl.accent{fill:var(--accent)}svg .lbl.pass{fill:var(--pass)}svg .lbl.warn{fill:var(--warn)}
+svg .arrfill{fill:currentColor}svg .arrfill.human{fill:var(--human)}svg .arrfill.accent{fill:var(--accent)}svg .arrfill.pass{fill:var(--pass)}svg .arrfill.warn{fill:var(--warn)}
+svg .frame{fill:none;stroke:currentColor;stroke-opacity:.5;stroke-width:1}
+svg .ftab{fill:var(--code);stroke:currentColor;stroke-opacity:.5;stroke-width:1}
+svg .fkind{font:700 10.5px var(--sans);fill:currentColor;letter-spacing:.04em}
+svg .flbl{font:11px var(--sans);fill:var(--muted)}
+svg .div{stroke:currentColor;stroke-opacity:.45;stroke-dasharray:4 4}
+svg .note{fill:var(--note)}svg .ntxt{font:11px var(--sans);fill:currentColor}
+svg .g{stroke:currentColor;stroke-width:1.5;fill:none}svg .g.main{stroke-width:2.25}svg .g.accent{stroke:var(--accent);stroke-width:2}svg .g.dash{stroke-dasharray:5 4}
+svg .c{fill:currentColor}svg .c.accent{fill:var(--accent)}
+svg .gl{font:500 12px var(--mono);fill:currentColor}svg .gl.accent{fill:var(--accent)}
+svg .gs{font:11px var(--sans);fill:var(--muted)}
+svg .st{font:500 12px var(--mono);fill:currentColor}
+svg .lbl,svg .flbl,svg .gs{paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+</style>
+
+<div class="page">
+<nav class="toc" aria-label="Contents">
+  <p class="toc-label">Contents</p>
+  <ol>
+    <li><a href="#glance">At a glance</a></li>
+    <li><a href="#topology">Branch topology</a></li>
+    <li><a href="#plan"><span class="n">1</span>Plan</a></li>
+    <li><a href="#epic"><span class="n">2</span>Epic</a></li>
+    <li><a href="#orchestrate"><span class="n">3</span>Orchestrate</a></li>
+    <li><a href="#watch"><span class="n">4</span>Watch</a></li>
+    <li><a href="#review"><span class="n">5</span>Review</a></li>
+    <li><a href="#land"><span class="n">6</span>Land</a></li>
+    <li><a href="#contract">Worker contract</a></li>
+    <li><a href="#guardrails">Guardrails</a></li>
+    <li><a href="#inventory">What exists, what to build</a></li>
+    <li><a href="#not">Not adopted</a></li>
+    <li><a href="#sources">Sources</a></li>
+  </ol>
+</nav>
+
+<main>
+<header>
+  <p class="eyebrow">Recommended workflow · herdr 0.9.0 · beads_rust 0.2.15 · a monorepo · 2026-09-15</p>
+  <h1>Herdr Epic Loop</h1>
+  <p class="lede">An epic-level loop for shipping a planned feature with coding agents. The strongest model writes the plan, the plan becomes a beads dependency graph, a mechanical orchestrator gives each ticket its own herdr worktree, a test-gated queue merges the results one branch at a time, a fresh-context reviewer closes the loop, and the epic lands as one pull request.</p>
+  <dl class="glance" id="glance">
+    <div><dt>Isolation</dt><dd>One worktree per ticket, branched from <code>epic/&lt;id&gt;</code>. The worktree outlives its agent.</dd></div>
+    <div><dt>Integration</dt><dd>Serial fast-forward into <code>epic/&lt;id&gt;</code>, after a rebase and a green suite in the ticket worktree.</dd></div>
+    <div><dt>Parallelism</dt><dd>Two to four workers, and only for tickets whose owned paths the plan declares disjoint.</dd></div>
+    <div><dt>Judgment</dt><dd>The orchestrator is a program with no memory. It calls a model as a function at three decision points, each with a schema.</dd></div>
+    <div><dt>Review</dt><dd>Fresh context, the diff and the rules only, at most three rounds, exit at zero blockers.</dd></div>
+    <div><dt>Landing</dt><dd>One PR per epic under about 600 changed lines, otherwise stacked PRs per ticket.</dd></div>
+  </dl>
+</header>
+
+<section id="pipeline">
+  <h2>The pipeline at a glance</h2>
+  <p>Six stages, in order. Three are machine-only. At the other three a human is in the loop: the interview that produces the plan, the questions the orchestrator cannot answer from the plan, and the pull request.</p>
+  <div class="stages">
+    <div class="stage human"><span class="k">1</span><span class="t">Plan</span><span class="who">Fable 5.1 or Opus 5, after an interview</span>Tickets with runnable acceptance criteria, owned paths, one-session size, and a parallel or serial mark.</div>
+    <div class="stage"><span class="k">2</span><span class="t">Epic</span><span class="who">br bulk import</span>One epic, its children, and <code>blocks</code> edges only where an interface really depends on another ticket.</div>
+    <div class="stage"><span class="k">3</span><span class="t">Orchestrate</span><span class="who">script; Sonnet 5 workers</span>Claim, worktree, brief, verify in a separate pane, merge one at a time, close.</div>
+    <div class="stage human"><span class="k">4</span><span class="t">Watch</span><span class="who">script; one-shot classifier calls</span>Stalled workers respawned once in the same worktree. Structured questions routed to the human.</div>
+    <div class="stage"><span class="k">5</span><span class="t">Review</span><span class="who">fresh Opus 5 or Fable 5.1</span>Integrated diff against the rules. Each blocker becomes a bug ticket under the ticket that owns the path, or under the epic.</div>
+    <div class="stage human"><span class="k">6</span><span class="t">Land</span><span class="who">gh</span>One PR per epic, the human pinged, one agent writes the lesson back into the docs.</div>
+  </div>
+  <p class="legend"><span><i></i>machine only</span><span><i class="human"></i>human in the loop</span></p>
+
+  <h3>The three changes that matter most</h3>
+  <ul>
+    <li><b>A hybrid worktree model.</b> One integration branch per epic and one worktree per ticket, parallel only where owned paths are disjoint, with a serial merge queue that reruns the tests before every fast-forward. The orchestrator never resolves a conflict; the authoring worker does, in the same worktree.</li>
+    <li><b>The orchestrator is a program, not an agent.</b> Every pass re-derives state from <code>br</code>, git and herdr, never from memory. A model is called as a stateless function at exactly three decision points, each with a bounded input and a schema. Everything else is a rule.</li>
+    <li><b>Verification the worker cannot argue with.</b> Acceptance criteria live in the ticket. The orchestrator reruns the tests in its own pane. The diff must stay inside the owned paths. Existing tests may not be modified or disabled.</li>
+  </ul>
+</section>
+
+<section id="topology">
+  <h2>Branch topology</h2>
+  <p>Worktrees isolate files, not decisions. Two workers can each pass their own tests and still disagree about an interface, which is why coupled tickets run serially and the integrated branch gets its own review round.</p>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 900 250" role="img" aria-label="Git graph: main at the top, an epic integration branch below it, tickets A and B branching off in parallel and merging back one at a time, ticket C branching after both, an integrated review marker, then a pull request back to main." style="min-width:640px">
+      <defs>
+        <marker id="garr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill" d="M0 0 L10 5 L0 10 Z"/></marker>
+        <marker id="garr-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill accent" d="M0 0 L10 5 L0 10 Z"/></marker>
+      </defs>
+      <!-- main -->
+      <line class="g main" x1="40" y1="40" x2="860" y2="40"/>
+      <text class="gl" x="40" y="28">main</text>
+      <circle class="c" cx="80" cy="40" r="4.5"/>
+      <circle class="c" cx="130" cy="40" r="4.5"/>
+      <!-- epic integration branch -->
+      <path class="g accent" d="M130 40 Q130 100 190 100 H750"/>
+      <text class="gl accent" x="196" y="90">epic/&lt;id&gt;</text>
+      <!-- ticket A -->
+      <path class="g" d="M230 100 Q230 150 280 150 H360 Q400 150 400 102" marker-end="url(#garr-accent)"/>
+      <circle class="c" cx="305" cy="150" r="4"/><circle class="c" cx="340" cy="150" r="4"/>
+      <text class="gs" x="320" y="172" text-anchor="middle">A · owned paths disjoint from B</text>
+      <!-- ticket B -->
+      <path class="g" d="M230 100 Q230 200 280 200 H420 Q460 200 460 102" marker-end="url(#garr-accent)"/>
+      <circle class="c" cx="305" cy="200" r="4"/><circle class="c" cx="350" cy="200" r="4"/><circle class="c" cx="400" cy="200" r="4"/>
+      <text class="gs" x="345" y="222" text-anchor="middle">B · runs in parallel with A, merges after it</text>
+      <line class="g dash" x1="408" y1="104" x2="408" y2="196"/>
+      <text class="gs" x="414" y="186">rebase, test</text>
+      <!-- ticket C -->
+      <path class="g" d="M520 100 Q520 150 570 150 H640 Q680 150 680 102" marker-end="url(#garr-accent)"/>
+      <circle class="c" cx="590" cy="150" r="4"/><circle class="c" cx="628" cy="150" r="4"/>
+      <text class="gs" x="600" y="172" text-anchor="middle">C · blocks on A and B</text>
+      <text class="gs" x="600" y="186" text-anchor="middle">shared-migrations: single writer</text>
+      <!-- integrated review -->
+      <path class="c accent" d="M715 90 L725 100 L715 110 L705 100 Z"/>
+      <text class="gs" x="715" y="128" text-anchor="middle">integrated review</text>
+      <text class="gs" x="715" y="142" text-anchor="middle">at most 3 rounds</text>
+      <!-- PR -->
+      <path class="g dash" d="M750 100 Q790 100 790 60 V46" marker-end="url(#garr)"/>
+      <text class="gs" x="800" y="70">PR to main</text>
+      <text class="gs" x="800" y="84">one per epic</text>
+    </svg>
+    </div>
+    <figcaption>One integration branch per epic. Tickets A and B run in parallel because the plan declares their owned paths disjoint; C blocks on both and runs alone because it touches a single-writer path. Each ticket branch is rebased, tested, and fast-forwarded one at a time. The pull request targets main only after the integrated branch passes review.</figcaption>
+  </figure>
+  <ul>
+    <li><b>Single-writer paths.</b> Shared migrations, generated code and shared contracts each belong to exactly one ticket per epic. Every other ticket that needs them declares a <code>blocks</code> dependency on that ticket.</li>
+    <li><b>The integration branch starts with a marker.</b> Its first commit is empty and exists nowhere on main, so "this worktree belongs to the epic" is a git fact: its HEAD descends from the marker. Which ticket it is comes from the <code>ticket/&lt;id&gt;</code> branch name, or from the ticket named in the worker's report file. Where the worktree lives on disk is never consulted, so a worktree an agent made for itself is still found, and one that matches no ticket is flagged and never merged.</li>
+    <li><b>The integration branch has a worktree too.</b> Created at start, it is where every fast-forward happens and where the integration check runs after each one, so the integrated code is always checked out somewhere the app can be brought up. Only the loop touches it, and only by fast-forward, or by rolling back after a failed integration check.</li>
+    <li><b>Worktrees persist.</b> A worktree outlives its agent. Conflicts and retries go to a fresh worker in the same worktree, which resumes from the commits plus the ticket notes.</li>
+    <li><b>Two to four in parallel, no more.</b> Above that the bottleneck is human review, and at five parallel agents conflict resolution has been measured at 30 to 50 percent of agent time.</li>
+    <li><b>Every worktree can run the app.</b> Each checkout derives its own ports for the app's services, so parallel worktrees do not fight over ports.</li>
+    <li><b>Serial is the fallback, not a failure.</b> Fresh context per ticket comes from spawning a new agent either way. Running coupled tickets one after another loses only wall clock.</li>
+  </ul>
+</section>
+
+<section id="plan">
+  <h2><span class="num">1</span>Plan</h2>
+  <p>The planner interviews first, following the product-first rule and <code>/grill-intent</code>, then writes the plan. The plan is accepted only when every ticket carries four things, because everything downstream leans on them.</p>
+  <ul>
+    <li><b>Runnable acceptance criteria.</b> A command or check the orchestrator can execute, not a sentence the worker interprets.</li>
+    <li><b>An owned-paths list.</b> The directories this ticket may change. The merge queue uses it as a hard boundary on the diff.</li>
+    <li><b>One-session size.</b> The ticket finishes inside one worker context. Anything larger is split before the epic is created.</li>
+    <li><b>A parallel or serial mark</b>, with the <code>blocks</code> dependencies that justify it.</li>
+  </ul>
+  <p>The fields each ticket carries into beads. The bulk-import markdown shape comes from <code>br create --help</code>; these are the fields, not the syntax.</p>
+<pre><code><span class="cm"># one ticket in the plan</span>
+title:        Port the snapshot append step to DCM
+type:         task            priority: 1
+parent:       &lt;epic-id&gt;
+deps:         blocks:&lt;shared-migrations ticket&gt;
+labels:       parallel, module:dcm
+owned_paths:  services/&lt;module&gt;/, docs/spec/&lt;module&gt;/
+acceptance:
+  - [ ] &lt;test command from the module CLAUDE.md&gt; passes in the worktree
+  - [ ] git diff --stat epic/&lt;id&gt; touches only the owned paths
+  - [ ] no existing test file modified or disabled
+size:         one session
+notes:        interface this ticket exposes, and who consumes it</code></pre>
+</section>
+
+<section id="epic">
+  <h2><span class="num">2</span>Epic</h2>
+  <p>Bulk-create the tickets under one epic, then add dependencies. Add only <code>blocks</code> edges, and only for real interface dependencies. Children of an epic are parallel by default; hierarchy is not ordering. The recurring beads failure is an agent encoding a sequence as a chain of <code>blocks</code> edges. Express constraints, not sequences.</p>
+<pre><code>br create -f plan.md --json                     <span class="cm"># bulk import under the epic</span>
+br dep add &lt;ticket&gt; &lt;depends-on&gt; -t blocks        <span class="cm"># interface dependency only</span>
+br ready --epic &lt;epic-id&gt; --json                <span class="cm"># exactly what the loop will see</span></code></pre>
+  <p>A review finding never reopens a closed ticket. A blocker becomes a bug ticket, child of the ticket whose owned paths it falls in, linked with <code>discovered-from</code>. The child inherits the parent's owned paths and acceptance checks, plus a check for the finding when the reviewer can state one, so the fix cannot regress what already passed. Because it is an ordinary open issue and <code>br ready --epic</code> is recursive, the same dispatch loop picks it up with no configuration. Closed tickets stay closed, and their close reasons stay true.</p>
+<pre><code>br create "Review: &lt;finding&gt;" -t bug --parent &lt;ticket&gt; --deps discovered-from:&lt;ticket&gt; -l review-finding
+br update &lt;bug&gt; --design="&lt;parent's owned_paths&gt;" --acceptance-criteria="&lt;parent's checks + fix check&gt;"</code></pre>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 800 230" role="img" aria-label="Ticket state diagram: open to in_progress on claim, in_progress to closed after verify, merge and close, in_progress to blocked on a needs-human block and back on an answer, closed files a bug child on a review blocker, and that child enters at open and is dispatched by the same loop." style="min-width:620px">
+      <defs><marker id="sarr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill" d="M0 0 L10 5 L0 10 Z"/></marker></defs>
+      <rect class="box accent" x="40" y="40" width="120" height="34" rx="3"/><text class="st" x="100" y="61" text-anchor="middle">open</text>
+      <rect class="box" x="260" y="40" width="140" height="34" rx="3"/><text class="st" x="330" y="61" text-anchor="middle">in_progress</text>
+      <rect class="box" x="500" y="40" width="120" height="34" rx="3"/><text class="st" x="560" y="61" text-anchor="middle">closed</text>
+      <rect class="box human" x="260" y="170" width="140" height="34" rx="3"/><text class="st" x="330" y="191" text-anchor="middle">blocked</text>
+      <rect class="box accent" x="495" y="170" width="130" height="34" rx="3"/><text class="st" x="560" y="191" text-anchor="middle">bug child · open</text>
+      <line class="m" x1="160" y1="57" x2="258" y2="57" marker-end="url(#sarr)"/>
+      <text class="gs" x="209" y="30" text-anchor="middle">br update --claim</text>
+      <line class="m" x1="400" y1="50" x2="498" y2="50" marker-end="url(#sarr)"/>
+      <text class="gs" x="449" y="30" text-anchor="middle">verify · merge · br close</text>
+      <line class="m" x1="300" y1="74" x2="300" y2="168" marker-end="url(#sarr)"/>
+      <text class="gs" x="292" y="125" text-anchor="end">needs-human block</text>
+      <line class="m" x1="360" y1="170" x2="360" y2="76" stroke-dasharray="5 4" marker-end="url(#sarr)"/>
+      <text class="gs" x="368" y="118">answer,</text><text class="gs" x="368" y="132">re-prompt</text>
+      <line class="m" x1="560" y1="74" x2="560" y2="168" stroke-dasharray="5 4" marker-end="url(#sarr)"/>
+      <text class="gs" x="568" y="118">review blocker</text><text class="gs" x="568" y="132">files a child</text>
+      <path class="m" d="M500 187 H460 V66 H402" marker-end="url(#sarr)"/>
+      <text class="gs" x="452" y="150" text-anchor="end">br ready</text><text class="gs" x="452" y="164" text-anchor="end">(recursive)</text>
+    </svg>
+    </div>
+    <figcaption>Ticket states. A closed ticket stays closed. A review blocker files a bug as its child (dashed), inheriting owned paths and acceptance checks; the child enters at open, outlined in the accent color like every ready state, and the same loop dispatches it because <code>br ready --epic</code> is recursive. Blocked holds a ticket while the human answers. Warnings are recorded as comments and file nothing.</figcaption>
+  </figure>
+</section>
+
+<section id="orchestrate">
+  <h2><span class="num">3</span>Orchestrate</h2>
+  <p>The orchestrator is a program, not an agent. It holds no transcript and no state; state lives in <code>br</code> and git, and each pass starts from <code>br ready --epic</code>. Per ticket it claims, isolates, briefs, verifies in its own pane, merges, and closes. Where a decision needs judgment, the program calls a model once with a bounded input and a schema, then continues on the answer. The worker's own report of success is not evidence; the rerun in the verify pane is.</p>
+  <figure>
+    <div class="fig-scroll"><svg viewBox="0 0 926 930" role="img" aria-label="One pass of the dispatch loop: the orchestrator reads ready tickets from br, claims one, creates a herdr worktree, starts and briefs a worker, reruns the tests in its own pane, runs a per-ticket review, then fast-forwards and closes the ticket, or hands the failure or the review blockers back." style="min-width:640px"><defs><marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-human" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill human" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-accent" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill accent" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-pass" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill pass" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-warn" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill warn" d="M0 0 L10 5 L0 10 Z"/></marker></defs><rect class="frame" x="24" y="664" width="878" height="236" rx="3"/><path class="ftab" d="M24 664 h40.5 v14 l-8 8 H24 Z"/><text class="fkind" x="31" y="679">alt</text><text class="flbl" x="74.5" y="679">[verification passes]</text><line class="div" x1="24" y1="828" x2="902" y2="828"/><text class="flbl" x="32" y="842">[verification fails]</text><rect class="frame" x="14" y="74" width="898" height="832" rx="3"/><path class="ftab" d="M14 74 h48 v14 l-8 8 H14 Z"/><text class="fkind" x="21" y="89">loop</text><text class="flbl" x="72" y="89">[while br ready --epic &lt;id&gt; returns tickets]</text><rect class="box" x="28" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="96" y="26" text-anchor="middle">Orchestrator</text><text class="psub" x="96" y="42" text-anchor="middle">a script; state in br, git</text><line class="life" x1="96" y1="52" x2="96" y2="926"/><rect class="box" x="196" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="264" y="26" text-anchor="middle">br</text><text class="psub" x="264" y="42" text-anchor="middle">beads database</text><line class="life" x1="264" y1="52" x2="264" y2="926"/><rect class="box" x="364" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="432" y="26" text-anchor="middle">herdr</text><text class="psub" x="432" y="42" text-anchor="middle">worktrees, panes, agents</text><line class="life" x1="432" y1="52" x2="432" y2="926"/><rect class="box" x="532" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="600" y="26" text-anchor="middle">Worker</text><text class="psub" x="600" y="42" text-anchor="middle">Sonnet 5, own worktree</text><line class="life" x1="600" y1="52" x2="600" y2="926"/><rect class="box" x="700" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="768" y="26" text-anchor="middle">Verify pane</text><text class="psub" x="768" y="42" text-anchor="middle">orchestrator-owned</text><line class="life" x1="768" y1="52" x2="768" y2="926"/><text class="lbl" x="180" y="112" text-anchor="middle">br ready --epic &lt;id&gt; --json</text><line class="m" x1="96" y1="120" x2="262" y2="120" marker-end="url(#arr)"/><text class="lbl" x="180" y="154" text-anchor="middle">unblocked tickets, owned paths, parallel mark</text><line class="m" x1="264" y1="162" x2="98" y2="162" stroke-dasharray="5 4" marker-end="url(#arr)"/><text class="lbl" x="180" y="196" text-anchor="middle">br update &lt;t&gt; --claim --actor orch</text><line class="m" x1="96" y1="204" x2="262" y2="204" marker-end="url(#arr)"/><text class="lbl" x="264" y="238" text-anchor="middle">worktree create &lt;t&gt; --base epic/&lt;id&gt;</text><line class="m" x1="96" y1="246" x2="430" y2="246" marker-end="url(#arr)"/><path class="m" d="M96 274 h34 v28 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="286">worktree setup, code generation</text><text class="lbl" x="138" y="300">(herdr runs nothing in a new worktree)</text><text class="lbl" x="264" y="336" text-anchor="middle">pane split --cwd &lt;wt&gt;; agent start &lt;t&gt; --kind claude</text><line class="m" x1="96" y1="344" x2="430" y2="344" marker-end="url(#arr)"/><text class="lbl accent" x="348" y="378" text-anchor="middle">agent prompt &lt;t&gt; "&lt;brief&gt;" --wait</text><text class="lbl accent" x="348" y="392" text-anchor="middle">--timeout 3600000</text><line class="m accent" x1="96" y1="400" x2="598" y2="400" marker-end="url(#arr-accent)"/><path class="m" d="M600 428 h34 v28 h-30" marker-end="url(#arr)"/><text class="lbl" x="642" y="440">implement inside owned paths; run tests</text><text class="lbl" x="642" y="454">commit with the [SPEC] or [BUG] prefix</text><text class="lbl" x="348" y="490" text-anchor="middle">stops; report written to .agent-report.json</text><line class="m" x1="600" y1="498" x2="98" y2="498" stroke-dasharray="5 4" marker-end="url(#arr)"/><path class="m" d="M96 526 h34 v18 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="538">read the report; branch on status (no model call)</text><text class="lbl" x="432" y="578" text-anchor="middle">pane run: git rebase epic/&lt;id&gt;;</text><text class="lbl" x="432" y="592" text-anchor="middle">&lt;test command&gt;; diff --stat vs owned paths</text><line class="m" x1="96" y1="600" x2="766" y2="600" marker-end="url(#arr)"/><text class="lbl" x="432" y="634" text-anchor="middle">green, and every changed path is owned</text><line class="m" x1="768" y1="642" x2="98" y2="642" stroke-dasharray="5 4" marker-end="url(#arr)"/><path class="m" d="M96 696 h34 v28 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="708">per-ticket review: fresh reviewer, ticket diff + rules;</text><text class="lbl" x="138" y="722">blockers go back to the worker, nothing closes</text><path class="m pass" d="M96 752 h34 v18 h-30" marker-end="url(#arr-pass)"/><text class="lbl pass" x="138" y="764">git merge --ff-only &lt;t&gt; into epic/&lt;id&gt;</text><text class="lbl" x="180" y="804" text-anchor="middle">br close &lt;t&gt; --reason "&lt;commit&gt;, &lt;check&gt;"</text><line class="m" x1="96" y1="812" x2="262" y2="812" marker-end="url(#arr)"/><text class="lbl warn" x="348" y="864" text-anchor="middle">re-prompt once with the failing output;</text><text class="lbl warn" x="348" y="878" text-anchor="middle">second failure: Opus 5, same worktree</text><line class="m warn" x1="96" y1="886" x2="598" y2="886" marker-end="url(#arr-warn)"/></svg></div>
+    <figcaption>One pass of the dispatch loop for a single ticket. The worker's report is a file in the worktree, and the loop branches on its status field without a model. The orchestrator reruns the tests, checks the diff against the owned paths, and puts the ticket's diff through a fresh reviewer before it merges. A failing verification or a review blocker goes back to the same worker in the same worktree.</figcaption>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th>Loop step</th><th>Command</th><th>Rule</th></tr></thead>
+    <tbody>
+      <tr><td>Find work</td><td><code>br ready --epic &lt;id&gt; --json</code></td><td>Dispatch a parallel ticket only when its owned paths are disjoint from every ticket in flight.</td></tr>
+      <tr><td>Claim</td><td><code>br update &lt;t&gt; --claim --actor orch</code></td><td>Exclusive. A second claim is refused, so two loops cannot take the same ticket.</td></tr>
+      <tr><td>Isolate</td><td><code>herdr worktree create --branch ticket/&lt;t&gt; --base epic/&lt;id&gt;</code></td><td>herdr picks the location and runs nothing inside it. The config's <code>worker.worktreeSetup</code> commands run next. An existing worktree is found again by branch, or by marker ancestry plus the report file.</td></tr>
+      <tr><td>Start</td><td><code>herdr pane split --cwd &lt;wt&gt; --no-focus</code>, then <code>herdr agent start &lt;t&gt; --kind claude --pane &lt;id&gt;</code></td><td>Needs an idle shell pane in the worktree.</td></tr>
+      <tr><td>Brief</td><td><code>herdr agent prompt &lt;t&gt; "&lt;brief&gt;" --wait --timeout 3600000</code></td><td>Returns on the first settled idle, done or blocked state. <code>agent_prompt_stalled</code> means nothing happened within five seconds.</td></tr>
+      <tr><td>Verify</td><td><code>git rebase epic/&lt;id&gt;</code>, then the ticket's acceptance commands, in the ticket worktree</td><td>Run by the orchestrator as child processes: the ticket's own checks, then the repository-wide <code>verify.repoChecks</code> every ticket must pass (the unit tests), wrapped in <code>verify.beforeChecks</code> and <code>verify.afterChecks</code> (start and stop the app). Also checks the diff against the owned paths and that no protected file changed.</td></tr>
+      <tr><td>Review</td><td>one-shot reviewer over <code>git diff epic/&lt;id&gt;...&lt;t&gt;</code></td><td>Fresh context: diff, rules, and the ticket's requirements. Blockers go back to the same worker; the ticket does not close until a round returns none.</td></tr>
+      <tr><td>Merge</td><td><code>git merge --ff-only &lt;t&gt;</code> in the integration worktree, then <code>merge.checksAfterMerge</code></td><td>One merge in flight at a time. If the integration check fails, the worktree is rolled back to the previous tip and the ticket goes back to its worker.</td></tr>
+      <tr><td>Close</td><td><code>br close &lt;t&gt; --reason "&lt;commit&gt;, &lt;check&gt;" --json</code></td><td>The reason names the commit and the check that passed.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Model per stage</h3>
+  <p>Name the model per stage explicitly. In one reported workflow, an instruction to "use Opus to plan" leaked onto every agent call and multiplied the cost several times over.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Role</th><th>Model</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Planner</td><td>Fable 5.1 or Opus 5</td><td>Plan quality bounds everything downstream.</td></tr>
+      <tr><td>Dispatch loop</td><td>No model. A Workflow script or shell.</td><td>Deterministic, restartable, cheap.</td></tr>
+      <tr><td>Stall, in-plan question, retry classification</td><td>Opus 5, one-shot with a JSON schema</td><td>Called by the script as a function. No conversation, no memory between calls.</td></tr>
+      <tr><td>Worker</td><td>Sonnet 5; Opus 5 on retry or on tickets labelled hard</td><td>Tickets are well specified by construction.</td></tr>
+      <tr><td>Reviewer</td><td>Opus 5 or Fable 5.1, fresh context</td><td>Never sees the author's reasoning.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Where the loop calls a model</h3>
+  <p>Three decisions, and only these three. Each is one call with a bounded input and a schema, made by the script and forgotten once it returns.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Decision</th><th>Trigger</th><th>Input</th><th>Output</th></tr></thead>
+    <tbody>
+      <tr><td>Stalled or working</td><td>No pane output for five minutes</td><td>The last 80 lines of the pane</td><td><code>working</code> or <code>stalled</code></td></tr>
+      <tr><td>In-plan question</td><td>Report status is <code>needs-human</code></td><td>The question, the plan, the spec</td><td>An answer, or <code>route-to-human</code></td></tr>
+      <tr><td>Retry class</td><td>Verification or the worker fails</td><td>The failing output and the ticket</td><td><code>flaky</code>, <code>environment</code> or <code>defect</code>, mapped to rerun, respawn or escalate</td></tr>
+    </tbody>
+  </table></div>
+  <p>Decided by rules, never by a model: whether a worker is done or asking (the status field of its report file), which worktree is a ticket's (marker ancestry, then branch name, then the report file), which ticket a finding belongs to (owned-path match on the file:line), how many retries remain (once with the same worker, once with Opus 5, then escalate), merge order (the queue), and when the review loop stops (zero blockers, three rounds, or a round that changed nothing).</p>
+
+  <h3>The merge queue</h3>
+  <p>Merging is where parallel work actually integrates, so it is the most guarded step. Nothing merges until the suite passes in the ticket worktree after rebasing onto the integration branch. One team cut agent-caused merge failures by about 80 percent with that single rule.</p>
+  <figure>
+    <div class="fig-scroll"><svg viewBox="0 0 696 964" role="img" aria-label="The merge queue: rebase the ticket branch onto the integration branch, run the tests in the ticket worktree, review the ticket diff with a fresh reviewer, fast-forward if green with zero blockers; on a conflict or review blockers, hand it back to the authoring worker in the same worktree." style="min-width:640px"><defs><marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-human" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill human" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-accent" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill accent" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-pass" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill pass" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-warn" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill warn" d="M0 0 L10 5 L0 10 Z"/></marker></defs><rect class="frame" x="14" y="170" width="668" height="770" rx="3"/><path class="ftab" d="M14 170 h40.5 v14 l-8 8 H14 Z"/><text class="fkind" x="21" y="185">alt</text><text class="flbl" x="64.5" y="185">[rebase is clean]</text><line class="div" x1="14" y1="460" x2="682" y2="460"/><text class="flbl" x="22" y="474">[rebase conflicts]</text><line class="div" x1="14" y1="706" x2="682" y2="706"/><text class="flbl" x="22" y="720">[tests fail after a clean rebase]</text><line class="div" x1="14" y1="766" x2="682" y2="766"/><text class="flbl" x="22" y="780">[review finds blockers]</text><line class="div" x1="14" y1="840" x2="682" y2="840"/><text class="flbl" x="22" y="854">[integration check fails after the merge]</text><rect class="box" x="28" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="96" y="26" text-anchor="middle">Orchestrator</text><text class="psub" x="96" y="42" text-anchor="middle">one merge in flight</text><line class="life" x1="96" y1="52" x2="96" y2="960"/><rect class="box" x="196" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="264" y="26" text-anchor="middle">Ticket worktree</text><text class="psub" x="264" y="42" text-anchor="middle">branch &lt;t&gt;, persists</text><line class="life" x1="264" y1="52" x2="264" y2="960"/><rect class="box" x="364" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="432" y="26" text-anchor="middle">epic/&lt;id&gt;</text><text class="psub" x="432" y="42" text-anchor="middle">integration worktree</text><line class="life" x1="432" y1="52" x2="432" y2="960"/><rect class="box" x="532" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="600" y="26" text-anchor="middle">Author worker</text><text class="psub" x="600" y="42" text-anchor="middle">respawned in the same worktree</text><line class="life" x1="600" y1="52" x2="600" y2="960"/><rect class="note" x="36" y="74" width="456" height="40" rx="2"/><text class="ntxt" x="264" y="88" text-anchor="middle">Queue order: most foundational ticket first. Nothing merges until the suite</text><text class="ntxt" x="264" y="103" text-anchor="middle">passes in the ticket worktree after the rebase. The orchestrator never edits code.</text><text class="lbl" x="180" y="140" text-anchor="middle">git fetch; git rebase epic/&lt;id&gt;</text><line class="m" x1="96" y1="148" x2="262" y2="148" marker-end="url(#arr)"/><text class="lbl" x="180" y="208" text-anchor="middle">run &lt;test command&gt; in the verify pane</text><line class="m" x1="96" y1="216" x2="262" y2="216" marker-end="url(#arr)"/><text class="lbl" x="180" y="250" text-anchor="middle">green; changed paths inside owned paths</text><line class="m" x1="264" y1="258" x2="98" y2="258" stroke-dasharray="5 4" marker-end="url(#arr)"/><path class="m" d="M96 286 h34 v28 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="298">per-ticket review (fresh reviewer): diff &lt;t&gt; vs epic/&lt;id&gt;,</text><text class="lbl" x="138" y="312">rules, ticket requirements; zero blockers required</text><text class="lbl pass" x="264" y="348" text-anchor="middle">git merge --ff-only &lt;t&gt;  (inside the worktree)</text><line class="m pass" x1="96" y1="356" x2="430" y2="356" marker-end="url(#arr-pass)"/><text class="lbl" x="264" y="390" text-anchor="middle">merge.checksAfterMerge: the suite on the integrated code</text><line class="m" x1="96" y1="398" x2="430" y2="398" marker-end="url(#arr)"/><path class="m" d="M96 426 h34 v18 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="438">br close &lt;t&gt; --reason "&lt;commit&gt;, &lt;check&gt;"</text><text class="lbl" x="180" y="496" text-anchor="middle">git rebase --abort</text><line class="m" x1="96" y1="504" x2="262" y2="504" marker-end="url(#arr)"/><text class="lbl warn" x="348" y="538" text-anchor="middle">respawn: "rebase onto epic/&lt;id&gt;, resolve,</text><text class="lbl warn" x="348" y="552" text-anchor="middle">rerun tests, report"; ticket notes attached</text><line class="m warn" x1="96" y1="560" x2="598" y2="560" marker-end="url(#arr-warn)"/><text class="lbl" x="432" y="594" text-anchor="middle">resolve, commit, tests green</text><line class="m" x1="600" y1="602" x2="266" y2="602" marker-end="url(#arr)"/><text class="lbl" x="348" y="636" text-anchor="middle">done + report</text><line class="m" x1="600" y1="644" x2="98" y2="644" stroke-dasharray="5 4" marker-end="url(#arr)"/><path class="m" d="M96 672 h34 v18 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="684">re-enter the queue; the next attempt rebases again</text><text class="lbl warn" x="348" y="742" text-anchor="middle">hand back with the failing output; nothing merges</text><line class="m warn" x1="96" y1="750" x2="598" y2="750" marker-end="url(#arr-warn)"/><text class="lbl warn" x="348" y="802" text-anchor="middle">hand back the findings (rule, file:line); same worktree;</text><text class="lbl warn" x="348" y="816" text-anchor="middle">up to N rounds, then escalate</text><line class="m warn" x1="96" y1="824" x2="598" y2="824" marker-end="url(#arr-warn)"/><text class="lbl warn" x="264" y="876" text-anchor="middle">git reset --hard &lt;previous tip&gt;</text><line class="m warn" x1="96" y1="884" x2="430" y2="884" marker-end="url(#arr-warn)"/><text class="lbl warn" x="348" y="918" text-anchor="middle">hand back the failing output; the epic branch is unchanged</text><line class="m warn" x1="96" y1="926" x2="598" y2="926" marker-end="url(#arr-warn)"/></svg></div>
+    <figcaption>The merge queue. A clean rebase, a green suite, and a review with zero blockers lead to a fast-forward inside the integration worktree, followed by the integration check. A conflict is aborted and handed to the authoring worker, respawned in the same worktree with the ticket notes. Review blockers and a failed integration check go back the same way, the latter after rolling the integration worktree back. The orchestrator never edits code.</figcaption>
+  </figure>
+</section>
+
+<section id="watch">
+  <h2><span class="num">4</span>Watch</h2>
+  <p>herdr reports one of five agent states: <span class="chip">idle</span> <span class="chip">working</span> <span class="chip blocked">blocked</span> <span class="chip done">done</span> <span class="chip">unknown</span>. Idle and done both mean ready for input. Unknown does not prove completion.</p>
+  <p class="callout"><b>The caveat that shapes the worker contract.</b> <code>blocked</code> fires only when herdr recognizes an approval or question UI. A worker that asks a question in prose finishes as <code>done</code>, so the agent state cannot tell finished from asking. The contract therefore requires the worker to write its structured report to <code>.agent-report.json</code> in the worktree before it stops. The loop reads that file and branches on its status field; no model is involved. Only when the file is missing does the loop fall back to <code>agent read</code> and a one-shot classifier call over the pane text.</p>
+  <figure>
+    <div class="fig-scroll"><svg viewBox="0 0 864 858" role="img" aria-label="Progress and stuck handling: the loop polls herdr state each pass, reads the pane on silence or a turn cap and makes one classifier call, respawns once in the same worktree, reads the report file when a worker stops, checks whether the plan answers a needs-human question before routing it to the human, and escalates on a second failure." style="min-width:640px"><defs><marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-human" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill human" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-accent" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill accent" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-pass" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill pass" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-warn" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill warn" d="M0 0 L10 5 L0 10 Z"/></marker></defs><rect class="frame" x="44" y="510" width="776" height="246" rx="3"/><path class="ftab" d="M44 510 h40.5 v14 l-8 8 H44 Z"/><text class="fkind" x="51" y="525">alt</text><text class="flbl" x="94.5" y="525">[the plan answers it]</text><line class="div" x1="44" y1="572" x2="820" y2="572"/><text class="flbl" x="52" y="586">[it does not]</text><rect class="frame" x="34" y="438" width="796" height="324" rx="3"/><path class="ftab" d="M34 438 h40.5 v14 l-8 8 H34 Z"/><text class="fkind" x="41" y="453">opt</text><text class="flbl" x="84.5" y="453">[status is needs-human]</text><rect class="frame" x="24" y="184" width="816" height="644" rx="3"/><path class="ftab" d="M24 184 h40.5 v14 l-8 8 H24 Z"/><text class="fkind" x="31" y="199">alt</text><text class="flbl" x="74.5" y="199">[no output for 5 min, or one turn over 1 h]</text><line class="div" x1="24" y1="358" x2="840" y2="358"/><text class="flbl" x="32" y="372">[done (blocked fires only on a recognized approval UI)]</text><line class="div" x1="24" y1="770" x2="840" y2="770"/><text class="flbl" x="32" y="784">[second failure on the ticket, 20 turns, or epic budget spent]</text><rect class="frame" x="14" y="116" width="836" height="718" rx="3"/><path class="ftab" d="M14 116 h48 v14 l-8 8 H14 Z"/><text class="fkind" x="21" y="131">loop</text><text class="flbl" x="72" y="131">[every watchdog pass; nothing is kept in orchestrator memory]</text><rect class="box" x="28" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="96" y="26" text-anchor="middle">Orchestrator</text><text class="psub" x="96" y="42" text-anchor="middle">a script, not an agent</text><line class="life" x1="96" y1="52" x2="96" y2="854"/><rect class="box" x="196" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="264" y="26" text-anchor="middle">herdr</text><text class="psub" x="264" y="42" text-anchor="middle">agent state, pane text</text><line class="life" x1="264" y1="52" x2="264" y2="854"/><rect class="box" x="364" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="432" y="26" text-anchor="middle">Worker</text><text class="psub" x="432" y="42" text-anchor="middle">pane in ticket worktree</text><line class="life" x1="432" y1="52" x2="432" y2="854"/><rect class="box" x="532" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="600" y="26" text-anchor="middle">br</text><text class="psub" x="600" y="42" text-anchor="middle">ticket status, notes</text><line class="life" x1="600" y1="52" x2="600" y2="854"/><rect class="box human" x="700" y="8" width="136" height="44" rx="3"/><text class="ptxt human" x="768" y="26" text-anchor="middle">Human</text><text class="psub human" x="768" y="42" text-anchor="middle">Chao</text><line class="life human" x1="768" y1="52" x2="768" y2="854"/><text class="lbl" x="180" y="86" text-anchor="middle">agent prompt &lt;t&gt; "&lt;brief&gt;" --wait --timeout 3600000</text><line class="m" x1="96" y1="94" x2="262" y2="94" marker-end="url(#arr)"/><text class="lbl" x="180" y="154" text-anchor="middle">state: idle·working·blocked·done·unknown</text><line class="m" x1="264" y1="162" x2="98" y2="162" stroke-dasharray="5 4" marker-end="url(#arr)"/><text class="lbl" x="180" y="222" text-anchor="middle">agent read &lt;t&gt; --lines 80</text><line class="m" x1="96" y1="230" x2="262" y2="230" marker-end="url(#arr)"/><path class="m" d="M96 258 h34 v28 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="270">one-shot classifier call (Opus 5):</text><text class="lbl" x="138" y="284">working or stalled? schema-bound</text><text class="lbl warn" x="264" y="320" text-anchor="middle">stalled: send-keys esc; respawn once in the</text><text class="lbl warn" x="264" y="334" text-anchor="middle">same worktree with the ticket notes</text><line class="m warn" x1="96" y1="342" x2="430" y2="342" marker-end="url(#arr-warn)"/><path class="m" d="M96 388 h34 v28 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="400">read .agent-report.json; branch on status</text><text class="lbl" x="138" y="414">(agent read + classifier only if the file is missing)</text><path class="m" d="M96 470 h34 v18 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="482">one-shot call (Opus 5): does the plan answer this?</text><text class="lbl accent" x="264" y="548" text-anchor="middle">agent prompt &lt;t&gt; "&lt;answer&gt;" --wait</text><line class="m accent" x1="96" y1="556" x2="430" y2="556" marker-end="url(#arr-accent)"/><text class="lbl" x="348" y="608" text-anchor="middle">br update &lt;t&gt; --status blocked --notes "&lt;question&gt;"</text><line class="m" x1="96" y1="616" x2="598" y2="616" marker-end="url(#arr)"/><text class="lbl human" x="432" y="650" text-anchor="middle">question, options, unblock actions</text><line class="m human" x1="96" y1="658" x2="766" y2="658" marker-end="url(#arr-human)"/><text class="lbl human" x="432" y="692" text-anchor="middle">answer</text><line class="m human" x1="768" y1="700" x2="98" y2="700" stroke-dasharray="5 4" marker-end="url(#arr-human)"/><text class="lbl accent" x="264" y="734" text-anchor="middle">agent prompt &lt;t&gt; "&lt;answer&gt;" --wait</text><line class="m accent" x1="96" y1="742" x2="430" y2="742" marker-end="url(#arr-accent)"/><text class="lbl human" x="432" y="806" text-anchor="middle">escalate: ticket, last report, worktree path</text><line class="m human" x1="96" y1="814" x2="766" y2="814" marker-end="url(#arr-human)"/></svg></div>
+    <figcaption>Progress and stuck handling. Each pass re-derives state from herdr and br. Silence or a turn cap triggers a pane read and one classifier call, then one respawn in the same worktree. When a worker stops, the loop reads its report file and branches on the status field. A needs-human question first goes through one call that checks whether the plan already answers it; only if not is the ticket parked as blocked and the question routed to the human. A second failure escalates.</figcaption>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th>Signal</th><th>Default</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>No output</td><td>5 minutes</td><td><code>agent read</code>, classify, respawn once in the same worktree with the ticket notes.</td></tr>
+      <tr><td>One turn</td><td>1 hour</td><td>Kill and respawn with the notes.</td></tr>
+      <tr><td>Retry backoff</td><td>10 s doubling, capped at 5 minutes</td><td>Between respawns.</td></tr>
+      <tr><td>Turns per ticket</td><td>20</td><td>Then escalate.</td></tr>
+      <tr><td>Second failure on a ticket</td><td>immediate</td><td><code>br update --status blocked</code> with the last report, then the human.</td></tr>
+      <tr><td>Alternate-screen output missing</td><td>fallback</td><td>The brief asks the worker to also write its final report to a file in the worktree.</td></tr>
+    </tbody>
+  </table></div>
+  <p>The defaults are Symphony's. They are starting points, not tuned values.</p>
+</section>
+
+<section id="review">
+  <h2><span class="num">5</span>Review</h2>
+  <p>Review happens at two levels. Per ticket, before the fast-forward: a fresh reviewer gets the ticket's diff against the integration branch, the rules, and the ticket's requirements, and the ticket does not close until a round returns zero blockers. Once the epic is integrated, one more review of <code>epic/&lt;id&gt;</code> against main looks for the cross-ticket conflicts that no single-ticket review can see, and anything it finds is filed as a bug child because every ticket is already closed.</p>
+  <ul>
+    <li><b>Fresh context only.</b> The reviewer gets the diff and the rules. It never sees the author's reasoning or transcript, and a reviewer told to find gaps will always find some, so it is told to flag only correctness and requirement gaps.</li>
+    <li><b>Every finding cites a rule and a file:line.</b> Behavior claims without a citation are dropped.</li>
+    <li><b>Converge.</b> After round one, nits are suppressed. Exit at zero blockers, cap at three rounds, and stop early when a round changes nothing.</li>
+    <li><b>A fresh worker fixes, never the reviewer.</b> A blocker becomes a bug ticket, child of the ticket whose owned paths it falls in, with a <code>discovered-from</code> link and the parent's owned paths and checks. A blocker outside every ticket becomes a child of the epic for a human to scope. Warnings are recorded on the ticket. Closed tickets stay closed.</li>
+  </ul>
+  <figure>
+    <div class="fig-scroll"><svg viewBox="0 0 864 653" role="img" aria-label="The review loop: a fresh-context reviewer gets the integrated diff, the rules and each ticket's requirements; a blocker becomes a bug ticket under the owning ticket or the epic; a fresh worker fixes it through the merge queue; the loop exits at zero blockers, after the round cap, or when a round files nothing." style="min-width:640px"><defs><marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-human" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill human" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-accent" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill accent" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-pass" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill pass" d="M0 0 L10 5 L0 10 Z"/></marker><marker id="arr-warn" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="arrfill warn" d="M0 0 L10 5 L0 10 Z"/></marker></defs><rect class="frame" x="24" y="212" width="816" height="148" rx="3"/><path class="ftab" d="M24 212 h40.5 v14 l-8 8 H24 Z"/><text class="fkind" x="31" y="227">alt</text><text class="flbl" x="74.5" y="227">[finding falls inside a ticket's owned paths]</text><line class="div" x1="24" y1="288" x2="840" y2="288"/><text class="flbl" x="32" y="302">[finding falls outside every ticket]</text><rect class="frame" x="14" y="74" width="836" height="516" rx="3"/><path class="ftab" d="M14 74 h48 v14 l-8 8 H14 Z"/><text class="fkind" x="21" y="89">loop</text><text class="flbl" x="72" y="89">[at most 3 rounds]</text><rect class="box" x="28" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="96" y="26" text-anchor="middle">Orchestrator</text><text class="psub" x="96" y="42" text-anchor="middle">routes findings, never fixes</text><line class="life" x1="96" y1="52" x2="96" y2="649"/><rect class="box" x="196" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="264" y="26" text-anchor="middle">Reviewer</text><text class="psub" x="264" y="42" text-anchor="middle">fresh Opus 5 or Fable 5.1</text><line class="life" x1="264" y1="52" x2="264" y2="649"/><rect class="box" x="364" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="432" y="26" text-anchor="middle">br</text><text class="psub" x="432" y="42" text-anchor="middle">bug children, comments</text><line class="life" x1="432" y1="52" x2="432" y2="649"/><rect class="box" x="532" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="600" y="26" text-anchor="middle">Fix worker</text><text class="psub" x="600" y="42" text-anchor="middle">fresh Sonnet 5, own worktree</text><line class="life" x1="600" y1="52" x2="600" y2="649"/><rect class="box" x="700" y="8" width="136" height="44" rx="3"/><text class="ptxt" x="768" y="26" text-anchor="middle">epic/&lt;id&gt;</text><text class="psub" x="768" y="42" text-anchor="middle">via the merge queue</text><line class="life" x1="768" y1="52" x2="768" y2="649"/><text class="lbl accent" x="180" y="112" text-anchor="middle">diff epic/&lt;id&gt; against main + the rules</text><text class="lbl accent" x="180" y="126" text-anchor="middle">(never the author's reasoning or transcript)</text><line class="m accent" x1="96" y1="134" x2="262" y2="134" marker-end="url(#arr-accent)"/><text class="lbl" x="180" y="168" text-anchor="middle">findings: severity, rule cited, file:line;</text><text class="lbl" x="180" y="182" text-anchor="middle">from round 2 nits are suppressed</text><line class="m" x1="264" y1="190" x2="98" y2="190" stroke-dasharray="5 4" marker-end="url(#arr)"/><text class="lbl" x="264" y="250" text-anchor="middle">br create -t bug --parent &lt;t&gt; --deps discovered-from:&lt;t&gt;</text><text class="lbl" x="264" y="264" text-anchor="middle">(inherits owned paths + checks; &lt;t&gt; stays closed)</text><line class="m" x1="96" y1="272" x2="430" y2="272" marker-end="url(#arr)"/><text class="lbl" x="264" y="324" text-anchor="middle">br create -t bug --parent &lt;epic&gt;</text><text class="lbl" x="264" y="338" text-anchor="middle">(a human confirms owned path + checks)</text><line class="m" x1="96" y1="346" x2="430" y2="346" marker-end="url(#arr)"/><text class="lbl" x="264" y="386" text-anchor="middle">br ready --epic &lt;id&gt;  (recursive: the new bug is open)</text><line class="m" x1="96" y1="394" x2="430" y2="394" marker-end="url(#arr)"/><text class="lbl accent" x="348" y="428" text-anchor="middle">brief: bug ticket + finding; fresh worktree from epic/&lt;id&gt;</text><line class="m accent" x1="96" y1="436" x2="598" y2="436" marker-end="url(#arr-accent)"/><text class="lbl" x="684" y="470" text-anchor="middle">commits, rebase, tests, fast-forward through the queue</text><line class="m" x1="600" y1="478" x2="766" y2="478" marker-end="url(#arr)"/><text class="lbl" x="264" y="512" text-anchor="middle">br close &lt;bug&gt; --reason "&lt;commit&gt;, &lt;check&gt;"</text><line class="m" x1="96" y1="520" x2="430" y2="520" marker-end="url(#arr)"/><path class="m" d="M96 548 h34 v28 h-30" marker-end="url(#arr)"/><text class="lbl" x="138" y="560">exit when zero blockers remain,</text><text class="lbl" x="138" y="574">or a round filed nothing</text><rect class="note" x="36" y="604" width="792" height="25" rx="2"/><text class="ntxt" x="432" y="618" text-anchor="middle">Blockers left after round 3: stop and escalate to the human with the open findings.</text></svg></div>
+    <figcaption>The review loop. Blockers are routed by owned path into bug tickets under the closed ticket. Because <code>br ready --epic</code> is recursive, the same dispatch loop picks them up with a fresh worker, a fresh worktree from the integration branch, and the finding in the brief.</figcaption>
+  </figure>
+</section>
+
+<section id="land">
+  <h2><span class="num">6</span>Land</h2>
+  <p>Under about 600 changed lines, open one pull request from <code>epic/&lt;id&gt;</code> to main. Above that, open stacked pull requests per ticket onto the integration branch with <code>gh stack</code>, three or four to a stack at most. The size rule comes from review data: PRs over 1,000 lines averaged 7.5 findings each, PRs under 50 lines averaged 0.5.</p>
+  <p>Landing has two more steps the original list did not have. First, ping the human through <code>herdr notification show</code> with the PR link, the review summary, and the token spend. Second, run one compound step: an agent writes the reusable lesson from this epic into the repo docs or the relevant <code>CLAUDE.md</code>, so the next plan starts from it.</p>
+</section>
+
+<section id="contract">
+  <h2>Worker contract</h2>
+  <p>A worker prompt is a self-contained brief. The worker never reads the epic, the plan, or another worker's transcript; everything it needs is in the brief, and everything it produces comes back in one structured report.</p>
+  <h3>The brief carries</h3>
+  <ul>
+    <li>The ticket: title, description, design notes, acceptance criteria as runnable commands.</li>
+    <li>The epic chain: what this ticket exposes and which tickets consume it. Frozen for the run.</li>
+    <li>Owned paths as a hard boundary, and the single-writer paths it must not touch.</li>
+    <li>The test command, the commit prefix rule (<code>[SPEC]</code> or <code>[BUG]</code>, enforced by the commit-msg hook), and the rule that apps run only through Docker Compose.</li>
+    <li>The return schema below, written to <code>.agent-report.json</code> in the worktree before the worker stops. The file is the primary channel; the pane is only the fallback.</li>
+  </ul>
+  <h3>The definition of done the worker cannot edit</h3>
+  <ul>
+    <li>Every acceptance check passes when the orchestrator reruns it.</li>
+    <li>The diff stays inside the owned paths.</li>
+    <li>No existing test is modified, skipped, or deleted. New tests are welcome.</li>
+    <li>Every commit is tested and carries the prefix.</li>
+  </ul>
+<pre><code>{
+  "status": "done | failed | needs-human",
+  "ticket": "&lt;id&gt;",
+  "commits": ["&lt;sha&gt;"],
+  "checks": [{ "cmd": "&lt;test command&gt;", "result": "pass" }],
+  "changed_paths": ["services/&lt;module&gt;/..."],
+  "question": "only with needs-human: one question, stated so a yes or a choice unblocks it",
+  "options": ["A", "B"],
+  "unblock": "what the answer decides, and what stays unblocked meanwhile",
+  "notes": "what the next worker in this worktree must know"
+}</code></pre>
+</section>
+
+<section id="guardrails">
+  <h2>Guardrails</h2>
+  <ul>
+    <li><b>Verification lives outside the prompt.</b> A hook or the orchestrator's rerun decides pass or fail, never the worker's summary. Both the compiler run and Grit saw agents game weak tests when the check was theirs to interpret.</li>
+    <li><b>Budget per epic.</b> Log tokens per ticket as <code>br comments</code>, set a ceiling per epic, and stop dispatching when it is reached. Gas Town users report about 100 dollars an hour at peak.</li>
+    <li><b>One kill switch.</b> One command stops every worker in the epic: iterate the panes, <code>herdr agent send-keys &lt;t&gt; ctrl+c</code>, and release the claims.</li>
+    <li><b>No orchestrator memory.</b> If the orchestrator dies, a new one reads <code>br</code> and the worktrees and continues. Nothing it knows lives only in its context.</li>
+    <li><b>No new issues on a whim.</b> Workers file nothing. The orchestrator files only the children the review loop produces, each with a <code>discovered-from</code> edge.</li>
+  </ul>
+</section>
+
+<section id="inventory">
+  <h2>What exists, what to build</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Component</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>herdr --skill</code></td><td><span class="status have">exists</span></td><td>Worktree, pane and agent commands, plus the rule that herdr runs nothing in a new worktree.</td></tr>
+      <tr><td>Epic loop script</td><td><span class="status build">build</span></td><td>The dispatch loop, merge queue and watchdog from steps 3 and 4. A Workflow script or shell.</td></tr>
+      <tr><td>Worker brief template and report parser</td><td><span class="status build">build</span></td><td>The contract above: the brief, the <code>.agent-report.json</code> reader, and the pane-text fallback.</td></tr>
+      <tr><td>Verify step</td><td><span class="status build">build</span></td><td>Rerun tests in an orchestrator pane, diff against owned paths, refuse modified tests.</td></tr>
+      <tr><td>Integrated-branch review round</td><td><span class="status build">build</span></td><td>Fresh-context reviewer over <code>epic/&lt;id&gt;</code> against main, filing blockers as bug children.</td></tr>
+      <tr><td>Budget log and kill switch</td><td><span class="status build">build</span></td><td>Tokens per ticket in br comments; one command to stop the epic.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="not">
+  <h2>Not adopted</h2>
+  <ul>
+    <li><b>Gas Town itself.</b> In maintenance mode, with reports of leaked tokens, killed crews and runs with permissions skipped. Borrow the integration branch, the merge queue, the watchdog that re-derives state, and the rule that hooked work must run.</li>
+    <li><b>Claude Code Agent Teams.</b> Teammates share one checkout, cannot run headless, and cannot resume. The herdr shape, an external loop driving full sessions in isolated worktrees, is the Symphony shape.</li>
+    <li><b>Pure parallel.</b> Isolation is cheap and integration is not. Parallelism is earned by disjoint owned paths declared in the plan, not assumed.</li>
+  </ul>
+</section>
+
+<section id="sources">
+  <h2>Sources</h2>
+  <ul class="src">
+    <li>OpenAI Symphony, SPEC.md and WORKFLOW.md, 2026-04-27. <a href="https://github.com/openai/symphony">github.com/openai/symphony</a></li>
+    <li>Anthropic, Effective harnesses for long-running agents, 2025-11-26. <a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents">anthropic.com/engineering</a></li>
+    <li>Anthropic, Building a C compiler with parallel Claudes, 2026-02-05. <a href="https://www.anthropic.com/engineering/building-c-compiler">anthropic.com/engineering</a></li>
+    <li>Claude Code docs: <a href="https://code.claude.com/docs/en/worktrees">worktrees</a>, <a href="https://code.claude.com/docs/en/workflows">workflows</a>, <a href="https://code.claude.com/docs/en/headless">headless</a>, <a href="https://code.claude.com/docs/en/code-review">code review</a>, <a href="https://code.claude.com/docs/en/agent-teams">agent teams</a></li>
+    <li>InfoQ, agent-based code review at Anthropic, 2026-04-17. <a href="https://www.infoq.com/news/2026/04/claude-code-review/">infoq.com</a></li>
+    <li>Steve Yegge, Gas Town from clown show to v1.0, 2026-04-03; beads discussion #506 on hierarchy versus blocking. <a href="https://github.com/steveyegge/beads/discussions/506">github.com/steveyegge/beads</a></li>
+    <li>beads_rust README. <a href="https://github.com/Dicklesworthstone/beads_rust">github.com/Dicklesworthstone/beads_rust</a></li>
+    <li>herdr 0.9.0 docs, agent automation and CLI reference. <a href="https://herdr.dev/llms.txt">herdr.dev</a></li>
+    <li>Scott Chacon, True Grit, June 2026. <a href="https://blog.gitbutler.com/true-grit">blog.gitbutler.com</a></li>
+    <li>javatarz, Multi-agent development workflows with Claude Code, 2026-05-19. <a href="https://dev.to/javatarz/multi-agent-development-workflows-with-claude-code-n23">dev.to</a></li>
+    <li>incident.io, Shipping faster with Claude Code and git worktrees. <a href="https://incident.io/blog/shipping-faster-with-claude-code-and-git-worktrees">incident.io</a></li>
+    <li>Claude Code issue #66419, plan-model instruction leaking onto every agent call. <a href="https://github.com/anthropics/claude-code/issues/66419">github.com/anthropics/claude-code</a></li>
+  </ul>
+  <p class="foot">Distilled from a research handoff of 2026-09-15, which holds three full research reports and a local inventory. Watchdog defaults are Symphony's and untuned. The policy file keys were checked against the beads_rust README on the same date.</p>
+</section>
+</main>
+</div>

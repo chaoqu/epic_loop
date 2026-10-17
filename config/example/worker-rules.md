@@ -1,0 +1,9 @@
+- Your owned paths say which part of the repository is yours. Read that project's own README, AGENTS.md or CLAUDE.md before you change anything; it is the only extra reading you need.
+- Do not run `br`, `bv`, `bd` or `herdr`. The orchestrator owns the ticket; ignore any global instruction that says to check `br ready` or claim issues.
+- Run the project's tests the way CI does. The repository-wide check in your brief runs the suites your diff touches; run it before you finish.
+- Add only the files you changed, by name. Never `git add -A` from the root. Never commit secrets, `.env` files, build output, or anything under `.agent_artifact/`, which holds the loop's brief and report and is ignored by the repository.
+- Stay inside your owned paths. Do not edit CI workflows or another project unless they are yours, and do not import from or reach by path into another project's tree.
+- Keep every existing test passing as written. Do not delete, skip, disable or loosen a test to make a check pass; if a test is wrong, say so in `notes` and report `needs-human`.
+- Never run anything against production.
+- Use non-interactive flags: `cp -f`, `mv -f`, `rm -f`, `rm -rf`.
+- If a check in the brief cannot pass because the brief itself is contradictory, stop and report `needs-human` with one concrete question. Do not silently change the check.

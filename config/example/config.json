@@ -1,0 +1,60 @@
+{
+  "repo": "~/src/my-repo",
+  "baseBranch": "main",
+  "commitPrefix": "",
+  "beadsActor": "epic-loop",
+  "pollIntervalMs": 15000,
+  "checkTimeoutMs": 1800000,
+  "integration": {
+    "branchPrefix": "epic/",
+    "claudeArgs": [],
+    "worktreeSetup": []
+  },
+  "dispatch": {
+    "maxParallelWorkers": 2
+  },
+  "worker": {
+    "model": "opus",
+    "retryModel": "opus",
+    "judgmentModel": "opus",
+    "claudeArgs": [
+      "--permission-mode",
+      "auto"
+    ],
+    "rulesFile": "worker-rules.md",
+    "worktreeSetup": [],
+    "silenceMs": 300000,
+    "turnMaxMs": 3600000,
+    "maxAttempts": 3,
+    "agentStartTimeoutMs": 90000,
+    "keepWorktreeAfterMerge": true
+  },
+  "verify": {
+    "beforeChecks": [],
+    "repoChecks": [
+      "\"$HOME/epic_loop/config/example/checks.sh\""
+    ],
+    "afterChecks": [],
+    "protectedPathsRegex": null
+  },
+  "review": {
+    "enabled": true,
+    "model": "opus",
+    "maxRounds": 2,
+    "rulesFile": "review-rules.md"
+  },
+  "merge": {
+    "checksAfterMerge": [
+      "\"$HOME/epic_loop/config/example/checks.sh\""
+    ]
+  },
+  "integratedReview": {
+    "enabled": true,
+    "model": "opus",
+    "maxRounds": 2,
+    "rulesFile": "review-rules.md"
+  },
+  "land": {
+    "openPullRequest": false
+  }
+}

@@ -1,0 +1,4 @@
+/_build/
+/deps/
+/epic_loop
+erl_crash.dump
